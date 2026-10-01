@@ -1,0 +1,15 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import type { ImageMetadata } from 'astro';
+interface Props { number: string; title: string; description: string; detail: string; image: ImageMetadata; alt: string; }
+const service = Astro.props;
+---
+<article class="service-card">
+  <a href="#contacto" class="service-photo" aria-label={`Consultar sobre ${service.title}`}>
+    <Image src={service.image} alt={service.alt} widths={[420, 720]} sizes="(max-width: 650px) 90vw, (max-width: 900px) 44vw, 30vw" format="webp" loading="lazy" />
+    <span class="service-number">{service.number}</span>
+    <span class="service-arrow"><Icon /></span>
+  </a>
+  <div class="service-copy"><span>{service.detail}</span><h3>{service.title}</h3><p>{service.description}</p></div>
+</article>

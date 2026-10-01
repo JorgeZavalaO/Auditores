@@ -1,0 +1,51 @@
+---
+import Icon from './Icon.astro';
+import { company, featuredServices, supportingServices } from '../data/site';
+---
+<section id="contacto" class="contact-section section-space">
+  <div class="container contact-grid">
+    <div class="contact-copy">
+      <span class="eyebrow"><span></span>CONVERSEMOS</span>
+      <h2>El primer paso hacia una gestión más clara.</h2>
+      <p>Cuéntanos qué necesita tu empresa. Comencemos con un diagnóstico contable y tributario gratuito.</p>
+      <div class="contact-details">
+        <div><span class="contact-icon"><Icon name="phone" /></span><div><small>Teléfono / WhatsApp</small><strong>{company.phone}</strong></div></div>
+        <div><span class="contact-icon"><Icon name="mail" /></span><div><small>Correo electrónico</small><strong>{company.email}</strong></div></div>
+      </div>
+      <span class="contact-example">Datos de ejemplo · se reemplazarán antes de publicar.</span>
+      <div class="contact-note"><Icon name="shield" /><span>La confidencialidad y el trato cercano son parte de nuestra forma de trabajar.</span></div>
+    </div>
+    <div class="form-panel">
+      <div class="form-heading"><h3>Hablemos de tu empresa</h3><span>Diagnóstico gratuito</span></div>
+      <p id="preview-notice" class="preview-notice">Formulario de vista previa. No envía ni guarda información.</p>
+      <form id="diagnostic-form" aria-describedby="preview-notice" onsubmit="return false">
+        <div class="form-row">
+          <label>Nombre completo <input name="name" type="text" autocomplete="name" placeholder="Tu nombre" required maxlength="100" /></label>
+          <label>Empresa <input name="company" type="text" autocomplete="organization" placeholder="Nombre de tu empresa" required maxlength="150" /></label>
+        </div>
+        <label>Correo electrónico <input name="email" type="email" autocomplete="email" placeholder="nombre@tuempresa.com" required maxlength="254" /></label>
+        <label>¿En qué podemos ayudarte?
+          <select name="service" required>
+            <option value="">Selecciona un servicio</option>
+            <option>Diagnóstico contable y tributario gratuito</option>
+            {featuredServices.map((service) => <option>{service.title}</option>)}
+            {supportingServices.map((service) => <option>{service.title}</option>)}
+          </select>
+        </label>
+        <label>Cuéntanos un poco más <textarea name="message" rows="3" placeholder="¿Qué te gustaría revisar o mejorar?" maxlength="2000"></textarea></label>
+        <button class="button form-submit" type="submit">Probar solicitud de diagnóstico <Icon /></button>
+        <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+        <noscript><p class="preview-notice">La demostración necesita JavaScript. Esta vista previa no envía tus datos.</p></noscript>
+      </form>
+    </div>
+  </div>
+</section>
+<script>
+  const form = document.querySelector<HTMLFormElement>('#diagnostic-form');
+  const status = document.querySelector<HTMLElement>('#form-status');
+  form?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+    if (status) status.textContent = 'Vista previa: el formulario es válido. No se ha enviado ni guardado información. Los canales de contacto se habilitarán antes de publicar.';
+  });
+</script>

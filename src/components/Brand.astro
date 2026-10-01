@@ -1,0 +1,10 @@
+---
+import { company } from '../data/site';
+---
+<a class="brand" href="#inicio" aria-label={`${company.name}, inicio`}>
+  <svg class="brand-mark" viewBox="0 0 46 46" fill="none" aria-hidden="true">
+    <path d="M7 36 20 9h8l13 27H30l-6-13-6 13H7Z" fill="currentColor" />
+    <path d="m5 15 5-10h11l-5 10H5Z" fill="currentColor" opacity=".45" />
+  </svg>
+  <span><strong>{company.name}<span class="brand-dot">.</span></strong><small>{company.descriptor}</small></span>
+</a>

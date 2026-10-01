@@ -1,0 +1,61 @@
+---
+import '@fontsource/manrope/400.css';
+import '@fontsource/manrope/500.css';
+import '@fontsource/manrope/600.css';
+import '@fontsource/manrope/700.css';
+import '@fontsource/manrope/800.css';
+import '../styles/global.css';
+import { company, featuredServices } from '../data/site';
+import { resolveSite } from '../../config/site.mjs';
+import { getImage } from 'astro:assets';
+import socialPhoto from '../assets/photos/team.jpg';
+
+const deployment = resolveSite({ SITE_URL: Astro.site?.origin, PUBLIC_LAUNCH_READY: import.meta.env.PUBLIC_LAUNCH_READY });
+const canonical = deployment.indexable ? new URL('/', deployment.origin).href : undefined;
+const socialImage = await getImage({ src: socialPhoto, width: 1200, height: 630, format: 'webp', fit: 'cover' });
+const absoluteImage = canonical ? new URL(socialImage.src, canonical).href : undefined;
+const schema = canonical ? {
+  '@context': 'https://schema.org',
+  '@type': 'ProfessionalService',
+  '@id': `${canonical}#business`,
+  name: company.name,
+  legalName: company.legalName,
+  url: canonical,
+  description: company.description,
+  areaServed: { '@type': 'Country', name: 'Peru' },
+  hasOfferCatalog: {
+    '@type': 'OfferCatalog',
+    name: 'Servicios contables y de auditoría',
+    itemListElement: featuredServices.map((service) => ({ '@type': 'Offer', itemOffered: { '@type': 'Service', name: service.title, description: service.description } })),
+  },
+} : undefined;
+---
+<!doctype html>
+<html lang="es-PE">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{company.title}</title>
+    <meta name="description" content={company.description} />
+    <meta name="robots" content={deployment.indexable ? 'index, follow' : 'noindex, nofollow'} />
+    <meta name="theme-color" content="#0A1267" />
+    {canonical && <link rel="canonical" href={canonical} />}
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_PE" />
+    <meta property="og:title" content={company.title} />
+    <meta property="og:description" content={company.description} />
+    <meta property="og:site_name" content={company.name} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    {absoluteImage && <meta property="og:image" content={absoluteImage} />}
+    {absoluteImage && <meta property="og:image:width" content="1200" />}
+    {absoluteImage && <meta property="og:image:height" content="630" />}
+    {absoluteImage && <meta property="og:image:alt" content="Colaboración profesional en un entorno empresarial" />}
+    <meta name="twitter:card" content={absoluteImage ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={company.title} />
+    <meta name="twitter:description" content={company.description} />
+    {absoluteImage && <meta name="twitter:image" content={absoluteImage} />}
+    {schema && <script type="application/ld+json" set:html={JSON.stringify(schema).replace(/</g, '\\u003c')} />}
+  </head>
+  <body><a href="#contenido" class="skip-link">Saltar al contenido</a><slot /></body>
+</html>
