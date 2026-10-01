@@ -1,10 +1,13 @@
 ---
 import Brand from './Brand.astro';
+import JJBrand from './JJBrand.astro';
 import Icon from './Icon.astro';
 import { company, navigation } from '../data/site';
+interface Props { branded?: boolean; }
+const { branded = false } = Astro.props;
 ---
 <footer class="site-footer">
-  <div class="container footer-top"><Brand /><p>Información clara.<br />Decisiones con confianza.</p><a href="#inicio" class="back-top">Volver al inicio <Icon /></a></div>
+  <div class="container footer-top">{branded ? <JJBrand light /> : <Brand />}<p>Información clara.<br />Decisiones con confianza.</p><a href="#inicio" class="back-top">Volver al inicio <Icon /></a></div>
   <div class="container footer-middle"><span>Auditoría · Contabilidad · Gestión empresarial</span><nav aria-label="Navegación del pie de página">{navigation.map((item) => <a href={item.href}>{item.label}</a>)}</nav></div>
-  <div class="container footer-bottom"><span>© {new Date().getFullYear()} {company.legalName}</span><span>Identidad comercial provisional · Vista previa</span></div>
+  <div class="container footer-bottom"><span>© {new Date().getFullYear()} {company.legalName}</span><span>{branded ? 'Demo 1 · Vista previa · Datos de ejemplo' : 'Identidad comercial provisional · Vista previa'}</span></div>
 </footer>

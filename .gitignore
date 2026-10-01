@@ -5,3 +5,15 @@ dist/
 .env.*
 !.env.example
 *.log
+
+# Original project references; runtime copies stay in src/assets/.
+/*.docx
+/*.doc
+/Diseño_base_Home Page.jpg
+/Logo-clientes/
+
+# Local tooling and recovery documents, not website resources.
+/.atl/
+/.codegraph/
+/.engram/
+/odd/

@@ -1,0 +1,24 @@
+---
+interface Props { light?: boolean; href?: string; }
+const { light = false, href = '#inicio' } = Astro.props;
+---
+<a href={href} class:list={['jj-brand', { light }]} aria-label="J&J CONSULTORES Y AUDITORES, inicio">
+  <span class="jj-monogram" aria-hidden="true">J<span>&</span>J</span>
+  <span class="jj-wordmark">CONSULTORES<br /><span>Y AUDITORES</span></span>
+</a>
+<style>
+  .jj-brand { display: inline-flex; align-items: center; gap: 15px; color: #0a1267; }
+  .jj-monogram { font-family: Georgia, 'Times New Roman', serif; font-size: 47px; line-height: 1; letter-spacing: -4px; }
+  .jj-monogram span { font-size: 27px; letter-spacing: -2px; padding-inline: 2px; }
+  .jj-wordmark { font-size: 8px; line-height: 1.9; font-weight: 700; letter-spacing: 1.6px; border-left: 1px solid #b5b8c4; padding-left: 15px; }
+  .jj-wordmark > span { letter-spacing: 2.2px; }
+  .light { color: #f8f6ef; }
+  .light .jj-wordmark { border-color: #565b8d; }
+  @media (max-width: 650px) {
+    .jj-brand { gap: 12px; }
+    .jj-monogram { font-size: 41px; }
+    .jj-monogram span { font-size: 24px; }
+    .jj-wordmark { font-size: 7px; letter-spacing: 1.4px; padding-left: 12px; }
+    .jj-wordmark > span { letter-spacing: 1.9px; }
+  }
+</style>

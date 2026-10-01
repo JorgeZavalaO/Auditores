@@ -8,6 +8,6 @@ const deployment = resolveSite({ ...loadEnv(process.env.NODE_ENV || 'production'
 export default defineConfig({
   site: deployment.origin,
   output: 'static',
-  integrations: deployment.indexable ? [sitemap()] : [],
+  integrations: deployment.indexable ? [sitemap({ filter: (page) => !/^\/demo[123](?:\/|$)/.test(new URL(page).pathname) })] : [],
   trailingSlash: 'always',
 });

@@ -1,0 +1,413 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import JJBrand from './JJBrand.astro';
+import Icon from './Icon.astro';
+import CorporateContact from './CorporateContact.astro';
+import { company, clients } from '../data/site';
+import { editorial } from '../data/editorial';
+import advisory from '../assets/photos/advisory.jpg';
+import team from '../assets/photos/team.jpg';
+---
+<BaseLayout demo title={editorial.title} description={editorial.description} siteName={editorial.name} favicon="/jj-favicon.svg">
+  <div class="editorial-demo">
+    <header class="e-header"><div class="e-container e-header-inner"><JJBrand /><button id="editorial-menu-toggle" type="button" aria-controls="editorial-navigation" aria-expanded="false" aria-label="Abrir menú de navegación" hidden><span></span><span></span></button><nav id="editorial-navigation" aria-label="Navegación principal">{editorial.navigation.map((item) => <a href={item.href}>{item.label}</a>)}<a class="e-nav-cta" href="#contacto">Conversemos <Icon /></a></nav></div></header>
+    <main id="contenido">
+      <section id="inicio" class="e-hero e-container">
+        <div class="e-hero-heading"><span class="e-overline">J&J CONSULTORES Y AUDITORES · PERÚ</span><h1>Auditoría que aporta<br /><em>perspectiva a tu empresa.</em></h1><span class="e-hero-rule" aria-hidden="true"></span></div>
+        <div class="e-hero-introduction"><span class="e-small-label">PARA MEDIANAS<br />Y GRANDES EMPRESAS</span><p>Una mirada independiente a la información financiera, los riesgos tributarios y los controles que sostienen las decisiones de tu organización.</p><a class="e-button" href="#contacto">Solicitar una propuesta <Icon /></a></div>
+        <div class="e-review-visual"><Image src={advisory} alt="Revisión de información financiera y documentos en una mesa de trabajo, fotografía ilustrativa" widths={[720, 1200, 1600]} sizes="(max-width: 650px) 90vw, 85vw" format="webp" loading="eager" fetchpriority="high" /><div class="e-framework" aria-hidden="true"><div class="e-framework-heading"><span>J&J</span><small>MARCO DE REVISIÓN</small></div><div class="e-framework-lines"><div><Icon name="document" /><span>Información financiera</span><span class="e-diagram-dot"></span></div><div><Icon name="shield" /><span>Situación tributaria</span><span class="e-diagram-dot"></span></div><div><Icon name="layers" /><span>Control interno</span><span class="e-diagram-dot"></span></div></div><svg class="e-framework-chart" viewBox="0 0 270 64" fill="none"><path d="M0 52h270M0 28h270M0 4h270" stroke="#E4E4DF"/><path d="m0 47 38-8 28 6 42-23 37 7 49-17 36 8 40-16" stroke="#0A1267" stroke-width="2"/><circle cx="194" cy="12" r="4" fill="#0A1267"/></svg><small class="e-diagram-caption">Ilustración de nuestro enfoque</small><span class="e-scanline"></span></div><div class="e-photo-note"><span>01 / INFORMACIÓN · RIESGOS · CONTROL</span><span>Una evaluación. Una visión más clara.</span></div></div>
+      </section>
+
+      <section id="auditoria" class="e-specialties e-container"><div class="e-section-intro" data-editorial-reveal><span class="e-overline">EL VALOR DE UNA MIRADA INDEPENDIENTE</span><h2>No solo revisar.<br /><em>Entender lo relevante.</em></h2><p>Definimos un alcance claro y evaluamos la información con criterio profesional. Cada especialidad aporta una perspectiva distinta a la gestión empresarial.</p></div><div class="e-specialty-grid">{editorial.specialties.map((specialty) => <article data-editorial-reveal><div class="e-specialty-top"><span>{specialty.number}</span><Icon name={specialty.icon} /></div><span class="e-small-label">{specialty.label}</span><h3>{specialty.title}</h3><p>{specialty.description}</p><a href="#contacto">{specialty.service} <Icon /></a></article>)}</div></section>
+
+      <section id="servicios" class="e-complementary">
+        <div class="e-container e-complementary-grid">
+          <div class="e-complementary-intro" data-editorial-reveal>
+            <span class="e-overline">SERVICIOS QUE COMPLEMENTAN TU GESTIÓN</span>
+            <h2>Más orden en el día a día.<br /><em>Más claridad para avanzar.</em></h2>
+            <p>Además de la auditoría, nuestro portafolio acompaña la gestión contable, financiera y laboral, la implementación de procesos y el uso de tecnología.</p>
+            <a href="#contacto" class="e-text-link">Conversemos sobre lo que necesitas <Icon /></a>
+          </div>
+          <div class="e-complementary-list">
+            {editorial.complementaryServices.map((service, index) => <article data-editorial-reveal><span class="e-complementary-number">0{index + 1}</span><div><h3>{service.title}</h3><p>{service.description}</p></div></article>)}
+          </div>
+        </div>
+        <div class="e-container">
+          <article class="e-diagnosis">
+            <div class="e-diagnosis-title"><span class="e-overline">UN PUNTO DE PARTIDA</span><h3>{editorial.diagnosis.title}</h3><span class="e-free-label">GRATUITO</span></div>
+            <p>{editorial.diagnosis.description}</p>
+            <a href="#contacto" class="e-diagnosis-link">Solicitar diagnóstico gratuito <Icon /></a>
+          </article>
+        </div>
+      </section>
+
+      <section id="criterio" class="e-criterion"><div class="e-container e-criterion-grid"><div class="e-criterion-heading" data-editorial-reveal><span class="e-overline">NUESTRO CRITERIO</span><h2>El rigor está en el proceso.<br /><em>El valor, en la perspectiva.</em></h2><p>Una evaluación útil empieza por entender el contexto y termina con información que puedas interpretar y priorizar.</p><a href="#contacto" class="e-text-link">Definamos el alcance <Icon /></a></div><ol class="e-process">{editorial.process.map((step, index) => <li data-editorial-reveal><span class="e-process-number">0{index + 1}</span><div><h3>{step.title}</h3><p>{step.description}</p></div><span class="e-process-mark" aria-hidden="true">+</span></li>)}</ol></div></section>
+
+      <section id="firma" class="e-firm e-container"><div class="e-firm-photo"><Image src={team} alt="Colaboración entre profesionales en una reunión de trabajo, fotografía ilustrativa" widths={[500, 800, 1100]} sizes="(max-width: 900px) 90vw, 42vw" format="webp" loading="lazy" /><span>CRITERIO PROFESIONAL. TRATO CERCANO.</span></div><div class="e-firm-copy" data-editorial-reveal><span class="e-overline">LA FIRMA</span><h2>Experiencia para evaluar.<br /><em>Cercanía para acompañar.</em></h2><p>J&J CONSULTORES Y AUDITORES es una firma peruana que combina una evaluación independiente con un compromiso cercano hacia cada organización.</p><p>Nuestros socios cuentan con 20 años de experiencia en los sectores comercial, industrial y construcción. Trabajamos con integridad, prevención y confidencialidad.</p><div class="e-experience-line"><strong>20</strong><span>Años de experiencia<br /><b>de nuestros socios</b></span></div></div></section>
+
+      <section class="e-clients e-container" aria-labelledby="editorial-clients-title"><div class="e-clients-heading"><h2 id="editorial-clients-title">Relaciones que se construyen con compromiso.</h2><span>EMPRESAS QUE FORMAN PARTE DE NUESTRO CAMINO</span></div><div class="e-client-grid">{clients.map((client) => <div><Image src={client.image} alt={client.name} width={150} height={65} fit="contain" format="webp" loading="lazy" /></div>)}</div></section>
+
+      <section class="e-principle"><div class="e-container" data-editorial-reveal><span class="e-overline">UNA FORMA DE ENTENDER LA AUDITORÍA</span><h2>La información importa.<br /><em>Lo que decides con ella, también.</em></h2><a href="#contacto" class="e-principle-link">Iniciemos una conversación <Icon /></a></div></section>
+
+      <section class="e-faq e-container"><div class="e-section-intro" data-editorial-reveal><span class="e-overline">ANTES DE COMENZAR</span><h2>Preguntas claras.<br /><em>Un mejor punto de partida.</em></h2></div><div class="e-faq-list">{editorial.faqs.map((faq) => <details><summary><span>{faq.question}</span><Icon name="plus" /></summary><p>{faq.answer}</p></details>)}</div></section>
+      <div class="e-contact"><CorporateContact serviceOptions={editorial.contactServices} serviceLabel="Servicio de interés" servicePlaceholder="Selecciona un servicio" description={editorial.contactDescription} messagePlaceholder={editorial.messagePlaceholder} /></div>
+    </main>
+    <footer class="e-footer"><div class="e-container e-footer-top"><JJBrand light /><p>Una mirada independiente.<br />Una perspectiva más clara.</p><a href="#inicio">Volver al inicio <Icon /></a></div><div class="e-container e-footer-bottom"><span>© {new Date().getFullYear()} {company.legalName}</span><span>Demo 3 · Contactos de ejemplo · Formulario de vista previa</span></div></footer>
+  </div>
+</BaseLayout>
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('#editorial-menu-toggle');
+  const navigation = document.querySelector<HTMLElement>('#editorial-navigation');
+  if (toggle && navigation) {
+    toggle.hidden = false;
+    navigation.classList.add('e-enhanced');
+    const close = () => {
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-label', 'Abrir menú de navegación');
+      navigation.classList.remove('e-open');
+    };
+    toggle.addEventListener('click', () => {
+      const open = toggle.getAttribute('aria-expanded') !== 'true';
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute('aria-label', open ? 'Cerrar menú de navegación' : 'Abrir menú de navegación');
+      navigation.classList.toggle('e-open', open);
+    });
+    navigation.querySelectorAll('a').forEach((link) => link.addEventListener('click', close));
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+        close();
+        toggle.focus();
+      }
+    });
+    if (typeof window.matchMedia === 'function') {
+      const desktop = window.matchMedia('(min-width: 901px)');
+      if (typeof desktop.addEventListener === 'function') desktop.addEventListener('change', close);
+    }
+  }
+
+  // Visible HTML is the baseline; motion enhances only non-critical content.
+  const revealElements = document.querySelectorAll<HTMLElement>('[data-editorial-reveal]');
+  const diagram = document.querySelector<HTMLElement>('.e-framework');
+  const seen = new WeakSet<Element>();
+  let observer: IntersectionObserver | undefined;
+  let scanPlayed = false;
+  if (typeof window.matchMedia === 'function') {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const updateMotion = () => {
+      observer?.disconnect();
+      revealElements.forEach((element) => element.classList.remove('e-entering'));
+      diagram?.classList.remove('e-scanning');
+      if (reducedMotion.matches) return;
+      if (typeof window.IntersectionObserver === 'function') {
+        observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting || seen.has(entry.target)) return;
+            seen.add(entry.target);
+            entry.target.classList.add('e-entering');
+            entry.target.addEventListener('animationend', () => entry.target.classList.remove('e-entering'), { once: true });
+            observer?.unobserve(entry.target);
+          });
+        }, { threshold: 0.12 });
+        revealElements.forEach((element) => { if (!seen.has(element)) observer?.observe(element); });
+      }
+      if (diagram && !scanPlayed) {
+        scanPlayed = true;
+        diagram.classList.add('e-scanning');
+        diagram.addEventListener('animationend', () => diagram.classList.remove('e-scanning'), { once: true });
+      }
+    };
+    updateMotion();
+    if (typeof reducedMotion.addEventListener === 'function') reducedMotion.addEventListener('change', updateMotion);
+    else {
+      const legacyMotion = reducedMotion as unknown as { addListener?: (listener: () => void) => void };
+      if (typeof legacyMotion.addListener === 'function') legacyMotion.addListener(updateMotion);
+    }
+  }
+</script>
+<style>
+  .editorial-demo { background: #f7f4ec; color: #262c42; }
+  .e-container { width: min(1160px, calc(100% - 80px)); margin-inline: auto; }
+  .e-header { position: sticky; top: 0; z-index: 30; background: #f7f4ec; border-bottom: 1px solid #deded6; }
+  .e-header-inner { display: flex; align-items: center; justify-content: space-between; gap: 30px; min-height: 99px; }
+  #editorial-navigation { display: flex; align-items: center; gap: 34px; }
+  #editorial-navigation > a { color: #303a58; font-size: 11px; }
+  #editorial-navigation > a:hover { color: #0a1267; }
+  #editorial-navigation > .e-nav-cta { display: inline-flex; gap: 25px; align-items: center; padding: 13px 0 13px 26px; border-left: 1px solid #cfd1cd; color: #0a1267; font-weight: 700; }
+  .e-nav-cta :global(svg) { width: 19px; }
+  #editorial-menu-toggle { display: none; background: transparent; border: 1px solid #cfd1cd; padding: 10px; width: 43px; height: 43px; }
+  #editorial-menu-toggle span { display: block; width: 21px; height: 2px; margin-block: 5px; background: #0a1267; transition: transform .2s; }
+  .e-overline { display: block; color: #62687a; font-size: 8px; letter-spacing: 1.8px; line-height: 1.8; font-weight: 600; }
+  .e-small-label { display: block; font-size: 8px; line-height: 1.9; letter-spacing: 1.4px; color: #62687a; font-weight: 600; }
+  .e-hero { padding-top: 63px; }
+  .e-hero-heading { text-align: center; }
+  .e-hero h1 { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(50px, 5.6vw, 77px); line-height: 1.13; color: #0a1267; font-weight: 400; letter-spacing: -2.3px; margin-top: 26px; }
+  .e-hero h1 em { font-weight: 400; color: #354278; }
+  .e-hero-rule { display: block; width: 1px; height: 31px; background: #b4b9c9; margin: 26px auto 0; }
+  .e-hero-introduction { display: grid; grid-template-columns: .75fr 2fr 1fr; align-items: center; gap: 40px; padding: 30px 0 70px; }
+  .e-hero-introduction > p { font-size: 13px; line-height: 1.9; max-width: 565px; }
+  .e-button { display: inline-flex; align-items: center; justify-content: space-between; gap: 25px; background: #0a1267; color: white; padding: 18px 22px; min-height: 55px; font-size: 11px; white-space: nowrap; }
+  .e-button:hover { background: #202d86; }
+  .e-button :global(svg) { width: 18px; height: 18px; }
+  .e-review-visual { position: relative; height: 385px; margin-bottom: 68px; }
+  .e-review-visual > :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: center 55%; filter: saturate(.6); }
+  .e-framework { position: absolute; top: -32px; right: 38px; width: 300px; padding: 26px 25px 22px; background: #fdfcf8; border: 1px solid #dadcd8; box-shadow: 0 16px 38px #1b244022; overflow: hidden; }
+  .e-framework-heading { display: flex; justify-content: space-between; align-items: center; padding-bottom: 17px; border-bottom: 1px solid #dbddd9; }
+  .e-framework-heading > span { font-family: Georgia, serif; font-size: 25px; letter-spacing: -1px; color: #0a1267; }
+  .e-framework-heading > small { font-size: 7px; letter-spacing: 1px; color: #62687a; }
+  .e-framework-lines { margin-top: 8px; }
+  .e-framework-lines > div { display: flex; gap: 10px; align-items: center; padding-block: 14px; border-bottom: 1px solid #e5e6df; font-size: 9px; color: #424f70; }
+  .e-framework-lines :global(svg) { width: 17px; height: 17px; color: #0a1267; }
+  .e-diagram-dot { width: 5px; height: 5px; border-radius: 50%; background: #0a1267; margin-left: auto; }
+  .e-framework-chart { width: 100%; height: 60px; margin-top: 21px; }
+  .e-diagram-caption { display: block; margin-top: 8px; font-size: 7px; color: #656b78; }
+  .e-scanline { display: block; position: absolute; top: 0; left: 12px; right: 12px; height: 2px; background: #596ab0; opacity: 0; pointer-events: none; }
+  .e-photo-note { position: absolute; left: 0; right: 0; bottom: -40px; display: flex; justify-content: space-between; gap: 20px; font-size: 8px; letter-spacing: 1px; color: #62687a; }
+  .e-photo-note span:last-child { letter-spacing: 0; }
+  .e-specialties { padding-block: 45px 91px; }
+  .e-section-intro { display: grid; grid-template-columns: 1fr 1fr; gap: 0 80px; }
+  .e-section-intro > .e-overline { grid-column: 1 / -1; }
+  .e-section-intro h2, .e-criterion h2, .e-firm h2, .e-principle h2 { color: #0a1267; font-family: Georgia, 'Times New Roman', serif; font-weight: 400; font-size: 45px; line-height: 1.18; letter-spacing: -1.4px; margin-top: 20px; }
+  .e-section-intro h2 em, .e-criterion h2 em, .e-firm h2 em, .e-principle h2 em { font-weight: 400; color: #354278; }
+  .e-section-intro > p { align-self: end; font-size: 13px; padding-bottom: 4px; max-width: 510px; }
+  .e-specialty-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 43px; margin-top: 46px; }
+  .e-specialty-grid article { border-top: 1px solid #bec5d3; padding-top: 23px; }
+  .e-specialty-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 35px; color: #0a1267; }
+  .e-specialty-top > span { font-family: Georgia, serif; font-size: 30px; font-style: italic; }
+  .e-specialty-top :global(svg) { width: 24px; height: 24px; }
+  .e-specialty-grid h3 { font-family: Georgia, serif; font-weight: 400; font-size: 29px; line-height: 1.25; letter-spacing: -.5px; color: #0a1267; margin-top: 14px; max-width: 310px; }
+  .e-specialty-grid p { font-size: 12px; margin-top: 18px; }
+  .e-specialty-grid a { display: flex; align-items: center; gap: 18px; color: #0a1267; font-size: 10px; font-weight: 600; margin-top: 24px; }
+  .e-specialty-grid a :global(svg) { width: 17px; height: 17px; }
+  .e-complementary { background: #fdfcf8; padding-block: 78px; border-top: 1px solid #deded6; }
+  .e-complementary-grid { display: grid; grid-template-columns: .85fr 1.15fr; gap: 80px; align-items: start; }
+  .e-complementary-intro h2 { color: #0a1267; font-family: Georgia, serif; font-weight: 400; font-size: 40px; line-height: 1.2; letter-spacing: -1.2px; margin-top: 20px; }
+  .e-complementary-intro h2 em { color: #354278; font-weight: 400; }
+  .e-complementary-intro p { font-size: 13px; margin-top: 24px; max-width: 390px; }
+  .e-complementary-list article { display: flex; gap: 24px; padding-block: 24px; border-top: 1px solid #d7dbd9; }
+  .e-complementary-list article:last-child { border-bottom: 1px solid #d7dbd9; }
+  .e-complementary-number { font-family: Georgia, serif; font-size: 22px; color: #62687a; line-height: 1.2; }
+  .e-complementary-list h3 { font-family: Georgia, serif; font-size: 23px; font-weight: 400; line-height: 1.3; color: #0a1267; letter-spacing: -.3px; }
+  .e-complementary-list p { font-size: 12px; margin-top: 11px; }
+  .e-diagnosis { background: #0a1267; color: #f7f4ec; padding: 32px 36px; margin-top: 45px; display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px 47px; align-items: center; }
+  .e-diagnosis .e-overline { color: #bac3e7; font-size: 7px; }
+  .e-diagnosis h3 { font-family: Georgia, serif; font-size: 28px; font-weight: 400; line-height: 1.2; margin-top: 12px; }
+  .e-free-label { display: inline-block; color: #f7f4ec; border: 1px solid #8892c0; font-size: 8px; letter-spacing: 1.3px; padding: 5px 9px; margin-top: 14px; }
+  .e-diagnosis > p { color: #c5ceeb; font-size: 12px; line-height: 1.85; }
+  .e-diagnosis-link { grid-column: 2; display: inline-flex; align-items: center; gap: 17px; font-size: 10px; color: #f7f4ec; justify-self: start; border-bottom: 1px solid #8793c0; padding-bottom: 8px; }
+  .e-diagnosis-link :global(svg) { width: 17px; height: 17px; }
+  .e-criterion { background: #edece5; padding-block: 87px; }
+  .e-criterion-grid { display: grid; grid-template-columns: 1fr 1.07fr; gap: 90px; align-items: start; }
+  .e-criterion h2 { font-size: 41px; }
+  .e-criterion-heading p { font-size: 13px; margin-top: 25px; max-width: 410px; }
+  .e-text-link { display: inline-flex; gap: 18px; align-items: center; font-size: 11px; font-weight: 600; color: #0a1267; border-bottom: 1px solid #afb7d0; padding-bottom: 9px; margin-top: 26px; }
+  .e-text-link :global(svg) { width: 18px; height: 18px; }
+  .e-process { list-style: none; margin: 0; padding: 0; }
+  .e-process li { display: flex; align-items: start; gap: 24px; padding-block: 24px; border-top: 1px solid #cfd3d3; }
+  .e-process li:last-child { border-bottom: 1px solid #cfd3d3; }
+  .e-process-number { color: #62687a; font-family: Georgia, serif; font-size: 23px; line-height: 1.1; }
+  .e-process h3 { font-size: 15px; font-weight: 600; color: #0a1267; }
+  .e-process p { font-size: 12px; margin-top: 8px; }
+  .e-process-mark { margin-left: auto; color: #777e8f; font-size: 22px; font-weight: 400; }
+  .e-firm { padding-block: 96px; display: grid; grid-template-columns: 1fr 1fr; gap: 85px; align-items: center; }
+  .e-firm-photo { position: relative; height: 478px; padding-bottom: 40px; }
+  .e-firm-photo > :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: 42% center; filter: saturate(.65); }
+  .e-firm-photo > span { position: absolute; left: 0; bottom: 0; font-size: 7px; letter-spacing: 1.3px; color: #62687a; }
+  .e-firm h2 { font-size: 39px; }
+  .e-firm-copy > p { font-size: 13px; margin-top: 22px; }
+  .e-experience-line { display: flex; gap: 23px; align-items: center; border-top: 1px solid #cbd0d8; margin-top: 30px; padding-top: 19px; }
+  .e-experience-line > strong { font-family: Georgia, serif; font-size: 59px; font-weight: 400; line-height: 1; letter-spacing: -2px; color: #0a1267; }
+  .e-experience-line > span { font-size: 10px; line-height: 1.9; color: #62687a; }
+  .e-experience-line b { color: #0a1267; font-weight: 600; }
+  .e-clients { border-top: 1px solid #d4d8d9; padding-block: 29px 54px; }
+  .e-clients-heading { display: flex; justify-content: space-between; gap: 20px; align-items: center; margin-bottom: 29px; }
+  .e-clients h2 { font-size: 12px; font-weight: 500; color: #4d566d; }
+  .e-clients-heading > span { font-size: 7px; letter-spacing: 1px; color: #62687a; }
+  .e-client-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 24px; }
+  .e-client-grid > div { display: flex; height: 45px; align-items: center; justify-content: center; }
+  .e-client-grid :global(img) { max-height: 43px; object-fit: contain; filter: grayscale(1); }
+  .e-principle { background: #0a1267; color: #f7f4ec; padding-block: 65px 71px; text-align: center; }
+  .e-principle .e-overline { color: #bac3e7; }
+  .e-principle h2 { color: #f7f4ec; font-size: 51px; margin-top: 23px; }
+  .e-principle h2 em { color: #bec9ed; }
+  .e-principle-link { display: inline-flex; gap: 18px; align-items: center; font-size: 10px; color: #f7f4ec; margin-top: 31px; padding-bottom: 10px; border-bottom: 1px solid #7883b6; }
+  .e-principle-link :global(svg) { width: 17px; height: 17px; }
+  .e-faq { padding-block: 88px; display: grid; grid-template-columns: .9fr 1fr; gap: 80px; }
+  .e-faq .e-section-intro { display: block; }
+  .e-faq h2 { font-size: 39px; }
+  .e-faq-list details { border-bottom: 1px solid #d0d5d8; }
+  .e-faq-list details:first-child { border-top: 1px solid #d0d5d8; }
+  .e-faq-list summary { display: flex; align-items: center; gap: 20px; padding-block: 24px; list-style: none; cursor: pointer; font-size: 12px; line-height: 1.7; color: #0a1267; }
+  .e-faq-list summary::-webkit-details-marker { display: none; }
+  .e-faq-list summary :global(svg) { width: 18px; height: 18px; margin-left: auto; flex-shrink: 0; transition: transform .2s; }
+  .e-faq-list details[open] summary :global(svg) { transform: rotate(45deg); }
+  .e-faq-list p { font-size: 12px; padding: 0 23px 24px 0; }
+  .e-contact { border-top: 1px solid #d4d8d9; }
+  .e-contact :global(.corporate-contact) { background: #f0eee6; }
+  .e-contact :global(.proposal-intro h2) { font-family: Georgia, serif; font-weight: 400; font-size: 42px; letter-spacing: -1px; }
+  .e-contact :global(.proposal-form-panel) { border-top-width: 1px; }
+  .e-footer { background: #090f42; padding-top: 41px; }
+  .e-footer-top { display: flex; align-items: center; justify-content: space-between; gap: 30px; padding-bottom: 33px; }
+  .e-footer-top > p { color: #c4ccec; font-size: 11px; }
+  .e-footer-top > a { display: inline-flex; gap: 15px; align-items: center; font-size: 9px; color: #c4ccec; }
+  .e-footer-top > a :global(svg) { width: 17px; height: 17px; transform: rotate(-90deg); }
+  .e-footer-bottom { display: flex; justify-content: space-between; gap: 20px; border-top: 1px solid #3f497a; padding-block: 23px; color: #b0bddf; font-size: 8px; }
+
+  /* Every section is visible without JavaScript; these classes are opt-in. */
+  [data-editorial-reveal] { opacity: 1; transform: none; }
+  .e-entering { animation: editorial-enter 650ms ease-out 1; }
+  .e-scanning .e-scanline { animation: editorial-scan 1900ms ease-in-out 1; }
+  @keyframes editorial-enter {
+    from { opacity: .65; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes editorial-scan {
+    0% { opacity: 0; transform: translateY(40px); }
+    20% { opacity: .65; }
+    80% { opacity: .65; }
+    100% { opacity: 0; transform: translateY(280px); }
+  }
+  @media (max-width: 1100px) {
+    .e-container { width: calc(100% - 56px); }
+    .e-hero-introduction { gap: 25px; grid-template-columns: .7fr 1.5fr 1fr; }
+    .e-hero h1 { font-size: 64px; }
+    .e-button { font-size: 10px; gap: 17px; padding-inline: 18px; }
+    .e-specialty-grid { gap: 28px; }
+    .e-criterion-grid { gap: 50px; }
+    .e-firm { gap: 50px; }
+    .e-faq { gap: 50px; }
+    .e-client-grid { gap: 18px; }
+  }
+  @media (max-width: 900px) {
+    .e-header-inner { min-height: 86px; flex-wrap: wrap; }
+    #editorial-menu-toggle:not([hidden]) { display: block; }
+    #editorial-navigation { width: 100%; justify-content: center; flex-wrap: wrap; gap: 25px; padding-bottom: 20px; }
+    #editorial-navigation.e-enhanced { display: none; }
+    #editorial-navigation.e-open { display: flex; }
+    #editorial-menu-toggle[aria-expanded='true'] span:first-child { transform: translateY(3.5px) rotate(45deg); }
+    #editorial-menu-toggle[aria-expanded='true'] span:last-child { transform: translateY(-3.5px) rotate(-45deg); }
+    .e-hero { padding-top: 51px; }
+    .e-hero h1 { font-size: 57px; }
+    .e-hero-introduction { grid-template-columns: .7fr 1.7fr; gap: 24px 30px; padding-bottom: 64px; }
+    .e-hero-introduction > .e-button { grid-column: 2; justify-self: start; font-size: 11px; }
+    .e-review-visual { height: 350px; }
+    .e-framework { width: 265px; right: 24px; top: -26px; padding: 22px; }
+    .e-framework-lines > div { font-size: 8px; }
+    .e-framework-chart { height: 50px; }
+    .e-specialties { padding-bottom: 69px; padding-top: 31px; }
+    .e-section-intro { gap: 0 40px; }
+    .e-section-intro h2 { font-size: 39px; }
+    .e-specialty-grid { gap: 23px; }
+    .e-specialty-grid h3 { font-size: 25px; }
+    .e-specialty-grid p { font-size: 11px; }
+    .e-specialty-grid a { font-size: 9px; gap: 10px; }
+    .e-complementary { padding-block: 65px; }
+    .e-complementary-grid { gap: 40px; }
+    .e-complementary-intro h2 { font-size: 34px; }
+    .e-complementary-list article { gap: 19px; }
+    .e-complementary-list h3 { font-size: 21px; }
+    .e-diagnosis { gap: 20px 30px; padding: 29px; }
+    .e-criterion { padding-block: 66px; }
+    .e-criterion-grid { grid-template-columns: 1fr; gap: 36px; }
+    .e-criterion-heading p { max-width: 550px; }
+    .e-process li { gap: 28px; }
+    .e-firm { padding-block: 70px; gap: 36px; }
+    .e-firm h2 { font-size: 33px; }
+    .e-firm-photo { height: 440px; }
+    .e-firm-copy > p { font-size: 12px; }
+    .e-clients-heading > span { display: none; }
+    .e-client-grid { grid-template-columns: repeat(5, 1fr); gap: 23px; }
+    .e-principle h2 { font-size: 43px; }
+    .e-faq { padding-block: 70px; grid-template-columns: 1fr; gap: 37px; }
+    .e-faq h2 { font-size: 37px; }
+    .e-contact :global(.proposal-intro h2) { font-size: 34px; }
+  }
+  @media (max-width: 650px) {
+    .e-container { width: calc(100% - 40px); }
+    .e-header-inner { min-height: 79px; gap: 20px; }
+    #editorial-navigation.e-open { align-items: stretch; flex-direction: column; gap: 0; }
+    #editorial-navigation > a { padding-block: 14px; border-top: 1px solid #d5d9d7; font-size: 12px; }
+    #editorial-navigation > .e-nav-cta { border-left: 0; padding-left: 0; padding-block: 16px; }
+    .e-hero { padding-top: 43px; }
+    .e-overline { font-size: 7px; letter-spacing: 1.2px; }
+    .e-hero h1 { font-size: clamp(38px, 10.5vw, 54px); letter-spacing: -1.3px; margin-top: 23px; }
+    .e-hero-rule { height: 24px; margin-top: 24px; }
+    .e-hero-introduction { grid-template-columns: 1fr; gap: 20px; padding-top: 26px; padding-bottom: 44px; text-align: center; }
+    .e-hero-introduction > .e-small-label { font-size: 7px; }
+    .e-hero-introduction > .e-small-label br { display: none; }
+    .e-hero-introduction > p { font-size: 12px; }
+    .e-hero-introduction > .e-button { grid-column: 1; justify-self: center; }
+    .e-review-visual { height: 420px; margin-bottom: 67px; }
+    .e-review-visual > :global(img) { height: 230px; object-position: center; }
+    .e-framework { width: calc(100% - 36px); max-width: 290px; top: 151px; left: 18px; right: auto; padding: 18px 20px; }
+    .e-framework-heading { padding-bottom: 12px; }
+    .e-framework-heading > span { font-size: 22px; }
+    .e-framework-lines > div { padding-block: 10px; font-size: 9px; }
+    .e-framework-chart { height: 39px; margin-top: 14px; }
+    .e-diagram-caption { font-size: 7px; margin-top: 4px; }
+    .e-photo-note { bottom: -38px; font-size: 7px; }
+    .e-photo-note span:last-child { display: none; }
+    .e-specialties { padding-top: 21px; padding-bottom: 55px; }
+    .e-section-intro { display: block; }
+    .e-section-intro h2 { font-size: 37px; }
+    .e-section-intro > p { font-size: 12px; margin-top: 22px; }
+    .e-specialty-grid { grid-template-columns: 1fr; gap: 32px; margin-top: 33px; }
+    .e-specialty-grid article { padding-top: 20px; }
+    .e-specialty-top { margin-bottom: 21px; }
+    .e-specialty-top > span { font-size: 26px; }
+    .e-specialty-grid h3 { font-size: 31px; max-width: 100%; }
+    .e-specialty-grid p { font-size: 12px; margin-top: 15px; }
+    .e-specialty-grid a { font-size: 10px; margin-top: 20px; }
+    .e-complementary { padding-block: 54px; }
+    .e-complementary-grid { grid-template-columns: 1fr; gap: 32px; }
+    .e-complementary-intro h2 { font-size: 35px; }
+    .e-complementary-intro p { font-size: 12px; }
+    .e-complementary-list article { gap: 17px; padding-block: 22px; }
+    .e-complementary-number { font-size: 20px; }
+    .e-complementary-list h3 { font-size: 22px; }
+    .e-complementary-list p { font-size: 11px; }
+    .e-diagnosis { grid-template-columns: 1fr; padding: 26px 23px; gap: 22px; margin-top: 33px; }
+    .e-diagnosis h3 { font-size: 30px; }
+    .e-diagnosis > p { font-size: 12px; }
+    .e-diagnosis-link { grid-column: 1; font-size: 10px; }
+    .e-criterion { padding-block: 54px; }
+    .e-criterion h2 { font-size: 36px; }
+    .e-criterion-heading p { font-size: 12px; }
+    .e-process li { gap: 17px; padding-block: 22px; }
+    .e-process-number { font-size: 21px; }
+    .e-process h3 { font-size: 14px; }
+    .e-process p { font-size: 11px; }
+    .e-firm { grid-template-columns: 1fr; padding-block: 59px; gap: 35px; }
+    .e-firm-photo { height: 335px; padding-bottom: 32px; }
+    .e-firm-photo > span { font-size: 6px; letter-spacing: .9px; }
+    .e-firm h2 { font-size: 35px; }
+    .e-firm-copy > p { font-size: 12px; }
+    .e-experience-line { gap: 21px; padding-top: 17px; margin-top: 25px; }
+    .e-experience-line > strong { font-size: 53px; }
+    .e-clients { padding-block: 27px 42px; }
+    .e-clients h2 { font-size: 11px; line-height: 1.7; }
+    .e-client-grid { gap: 18px 13px; }
+    .e-client-grid > div { height: 31px; }
+    .e-client-grid :global(img) { max-height: 29px; }
+    .e-principle { padding-block: 47px 51px; }
+    .e-principle h2 { font-size: 36px; line-height: 1.22; }
+    .e-principle-link { font-size: 9px; margin-top: 26px; }
+    .e-faq { padding-block: 59px; gap: 32px; }
+    .e-faq h2 { font-size: 35px; }
+    .e-faq-list summary { font-size: 11px; gap: 15px; }
+    .e-faq-list p { font-size: 11px; }
+    .e-contact :global(.proposal-intro h2) { font-size: 35px; }
+    .e-footer { padding-top: 35px; }
+    .e-footer-top { flex-wrap: wrap; gap: 25px; }
+    .e-footer-top :global(.jj-brand) { flex-basis: 100%; }
+    .e-footer-top > p { font-size: 10px; }
+    .e-footer-top > a { font-size: 8px; gap: 12px; }
+    .e-footer-bottom { flex-direction: column; gap: 12px; font-size: 7px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .e-entering, .e-scanning .e-scanline { animation: none !important; }
+    [data-editorial-reveal] { opacity: 1 !important; transform: none !important; }
+    .e-scanline { opacity: 0 !important; }
+    #editorial-menu-toggle span, .e-faq-list summary :global(svg) { transition: none; }
+  }
+</style>

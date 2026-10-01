@@ -10,8 +10,11 @@ import { resolveSite } from '../../config/site.mjs';
 import { getImage } from 'astro:assets';
 import socialPhoto from '../assets/photos/team.jpg';
 
+interface Props { demo?: boolean; title?: string; description?: string; siteName?: string; favicon?: string; }
+const { demo = false, title = company.title, description = company.description, siteName = company.name, favicon = '/favicon.svg' } = Astro.props;
 const deployment = resolveSite({ SITE_URL: Astro.site?.origin, PUBLIC_LAUNCH_READY: import.meta.env.PUBLIC_LAUNCH_READY });
-const canonical = deployment.indexable ? new URL('/', deployment.origin).href : undefined;
+const indexable = deployment.indexable && !demo;
+const canonical = indexable ? new URL('/', deployment.origin).href : undefined;
 const socialImage = await getImage({ src: socialPhoto, width: 1200, height: 630, format: 'webp', fit: 'cover' });
 const absoluteImage = canonical ? new URL(socialImage.src, canonical).href : undefined;
 const schema = canonical ? {
@@ -35,25 +38,25 @@ const schema = canonical ? {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{company.title}</title>
-    <meta name="description" content={company.description} />
-    <meta name="robots" content={deployment.indexable ? 'index, follow' : 'noindex, nofollow'} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content={indexable ? 'index, follow' : 'noindex, nofollow'} />
     <meta name="theme-color" content="#0A1267" />
     {canonical && <link rel="canonical" href={canonical} />}
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href={favicon} />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="es_PE" />
-    <meta property="og:title" content={company.title} />
-    <meta property="og:description" content={company.description} />
-    <meta property="og:site_name" content={company.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content={siteName} />
     {canonical && <meta property="og:url" content={canonical} />}
     {absoluteImage && <meta property="og:image" content={absoluteImage} />}
     {absoluteImage && <meta property="og:image:width" content="1200" />}
     {absoluteImage && <meta property="og:image:height" content="630" />}
     {absoluteImage && <meta property="og:image:alt" content="Colaboración profesional en un entorno empresarial" />}
     <meta name="twitter:card" content={absoluteImage ? 'summary_large_image' : 'summary'} />
-    <meta name="twitter:title" content={company.title} />
-    <meta name="twitter:description" content={company.description} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
     {absoluteImage && <meta name="twitter:image" content={absoluteImage} />}
     {schema && <script type="application/ld+json" set:html={JSON.stringify(schema).replace(/</g, '\\u003c')} />}
   </head>

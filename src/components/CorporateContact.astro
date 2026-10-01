@@ -1,0 +1,92 @@
+---
+import Icon from './Icon.astro';
+import { company } from '../data/site';
+import { corporate } from '../data/corporate';
+interface Props { serviceOptions?: string[]; serviceLabel?: string; servicePlaceholder?: string; description?: string; messagePlaceholder?: string; }
+const {
+  serviceOptions = [...corporate.specialties.map((service) => service.title), 'Evaluación del alcance de auditoría'],
+  serviceLabel = 'Especialidad de interés',
+  servicePlaceholder = 'Selecciona una especialidad',
+  description = 'Conozcamos el contexto de tu empresa y definamos el alcance de una evaluación independiente.',
+  messagePlaceholder = 'Cuéntanos qué necesita evaluar tu organización',
+} = Astro.props;
+---
+<section id="contacto" class="corporate-contact">
+  <div class="contact-container">
+    <div class="proposal-intro">
+      <span class="proposal-eyebrow">INICIEMOS UNA CONVERSACIÓN</span>
+      <h2>Una propuesta a la medida de tu organización.</h2>
+      <p>{description}</p>
+      <div class="proposal-details"><div><Icon name="mail" /><span><small>Correo electrónico</small><strong>{company.email}</strong></span></div><div><Icon name="phone" /><span><small>Teléfono / WhatsApp</small><strong>{company.phone}</strong></span></div></div>
+      <p class="example-notice">Datos de ejemplo. Canales no habilitados en esta demostración.</p>
+      <div class="proposal-assurance"><Icon name="shield" /><span>Confidencialidad desde el primer contacto.</span></div>
+    </div>
+    <div class="proposal-form-panel">
+      <h3>Conversemos sobre tu empresa</h3>
+      <p id="corporate-preview-notice">Formulario de vista previa. No envía ni guarda información.</p>
+      <form id="corporate-proposal-form" onsubmit="return false" aria-describedby="corporate-preview-notice">
+        <div class="proposal-form-row"><label>Nombre completo<input name="name" type="text" autocomplete="name" placeholder="Nombre y apellidos" required maxlength="100" /></label><label>Empresa<input name="company" type="text" autocomplete="organization" placeholder="Nombre de la empresa" required maxlength="150" /></label></div>
+        <label>Correo corporativo<input name="email" type="email" autocomplete="email" placeholder="nombre@tuempresa.com" required maxlength="254" /></label>
+        <label>{serviceLabel}<select name="service" required><option value="">{servicePlaceholder}</option>{serviceOptions.map((service) => <option>{service}</option>)}</select></label>
+        <label>Contexto del encargo<textarea name="message" rows="3" placeholder={messagePlaceholder} maxlength="2000"></textarea></label>
+        <button type="submit">Probar solicitud de propuesta <Icon /></button>
+        <p id="corporate-form-status" class="proposal-status" role="status" aria-live="polite"></p>
+        <noscript><p>La demostración necesita JavaScript. No se envían tus datos.</p></noscript>
+      </form>
+    </div>
+  </div>
+</section>
+<script>
+  const form = document.querySelector<HTMLFormElement>('#corporate-proposal-form');
+  const status = document.querySelector<HTMLElement>('#corporate-form-status');
+  form?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+    if (status) status.textContent = 'Vista previa: la solicitud es válida. No se ha enviado ni guardado información. Los canales se habilitarán antes de publicar.';
+  });
+</script>
+<style>
+  .corporate-contact { background: #f3f4f6; padding-block: 100px; }
+  .contact-container { width: min(1200px, calc(100% - 80px)); margin-inline: auto; display: grid; grid-template-columns: .9fr 1fr; gap: 95px; }
+  .proposal-eyebrow { color: #4c5573; font-size: 9px; letter-spacing: 1.8px; font-weight: 700; }
+  .proposal-intro h2 { color: #0a1267; font-size: 41px; line-height: 1.3; letter-spacing: -1.5px; font-weight: 500; margin-top: 22px; }
+  .proposal-intro > p { margin-top: 25px; font-size: 14px; max-width: 430px; }
+  .proposal-details { margin-top: 34px; display: grid; gap: 24px; }
+  .proposal-details > div { display: flex; gap: 17px; align-items: center; color: #0a1267; }
+  .proposal-details svg { width: 21px; height: 21px; }
+  .proposal-details small { display: block; font-size: 10px; color: #62697b; margin-bottom: 5px; }
+  .proposal-details strong { font-size: 15px; font-weight: 600; overflow-wrap: anywhere; }
+  .proposal-intro > .example-notice { font-size: 10px; margin-top: 23px; }
+  .proposal-assurance { margin-top: 32px; border-top: 1px solid #d9dde4; padding-top: 22px; display: flex; gap: 12px; align-items: center; color: #62697b; font-size: 11px; }
+  .proposal-assurance svg { color: #0a1267; width: 21px; }
+  .proposal-form-panel { border-top: 2px solid #0a1267; padding-top: 27px; }
+  .proposal-form-panel h3 { font-size: 20px; font-weight: 500; color: #0a1267; letter-spacing: -.5px; }
+  .proposal-form-panel > p { font-size: 10px; margin-top: 11px; margin-bottom: 25px; }
+  .proposal-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+  form > label { margin-bottom: 20px; }
+  form label { font-size: 10px; font-weight: 600; color: #30384f; }
+  input, select, textarea { margin-top: 8px; border: 1px solid #d5d9e2; background: #fff; font-size: 12px; padding: 13px 14px; min-height: 46px; }
+  input:focus, select:focus, textarea:focus { border-color: #0a1267; }
+  input::placeholder, textarea::placeholder { color: #62697b; opacity: 1; }
+  textarea { min-height: 100px; }
+  form button { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 20px; padding: 18px 21px; min-height: 55px; border: 1px solid #0a1267; color: white; background: #0a1267; font-size: 12px; font-weight: 600; transition: background .2s; }
+  form button:hover { background: #182387; }
+  form button svg { width: 20px; }
+  .proposal-status { margin-top: 15px; font-size: 11px; color: #0a1267; }
+  .proposal-status:empty { display: none; }
+  @media (max-width: 900px) {
+    .corporate-contact { padding-block: 70px; }
+    .contact-container { width: calc(100% - 56px); gap: 45px; }
+    .proposal-intro h2 { font-size: 34px; }
+  }
+  @media (max-width: 650px) {
+    .corporate-contact { padding-block: 60px; }
+    .contact-container { width: calc(100% - 40px); grid-template-columns: 1fr; gap: 40px; }
+    .proposal-intro h2 { font-size: 33px; }
+    .proposal-intro > p { font-size: 13px; }
+    .proposal-form-row { grid-template-columns: 1fr; gap: 20px; }
+    form label { font-size: 11px; }
+    input, select, textarea { font-size: 16px; }
+    form button { font-size: 11px; padding-inline: 17px; }
+  }
+</style>

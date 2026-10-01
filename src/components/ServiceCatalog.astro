@@ -1,0 +1,72 @@
+---
+import Icon from './Icon.astro';
+import { serviceCatalog } from '../data/serviceCatalog';
+interface Props { home: string; }
+const { home } = Astro.props;
+---
+<div class="catalog-list">
+  {serviceCatalog.filter((service) => !service.freeDiagnosis).map((service, index) => (
+    <article id={service.id} class="catalog-service">
+      <div class="catalog-marker"><span>0{index + 1}</span><Icon name={service.icon} /></div>
+      <div class="catalog-copy">
+        <h2>{service.title}</h2>
+        <p>{service.summary}</p>
+        <h3>Alcance del servicio</h3>
+        <ul>{service.scope.map((item) => <li>{item}</li>)}</ul>
+        <div class="catalog-value"><h3>Valor para tu empresa</h3><p>{service.value}</p></div>
+        <a class="catalog-link" href={`${home}#contacto`}>Conversemos sobre este servicio <Icon /></a>
+      </div>
+    </article>
+  ))}
+</div>
+{serviceCatalog.filter((service) => service.freeDiagnosis).map((service) => (
+  <section id={service.id} class="catalog-diagnosis" aria-labelledby="diagnosis-title">
+    <div><span class="catalog-free">GRATUITO</span><h2 id="diagnosis-title">{service.title}</h2><p>{service.summary}</p></div>
+    <div><h3>Una visión clara para comenzar</h3><ul>{service.scope.map((item) => <li>{item}</li>)}</ul><p>{service.value}</p><a class="catalog-action" href={`${home}#contacto`}>Solicitar diagnóstico gratuito <Icon /></a></div>
+  </section>
+))}
+<style>
+  .catalog-service { scroll-margin-top: 36px; }
+  .catalog-marker { display: flex; align-items: center; justify-content: space-between; color: #0a1267; }
+  .catalog-marker svg { width: 28px; height: 28px; }
+  .catalog-service h2 { font-size: clamp(23px, 2.2vw, 30px); line-height: 1.3; color: #0a1267; }
+  .catalog-service h3, .catalog-diagnosis h3 { font-size: 12px; letter-spacing: .04em; margin: 26px 0 12px; }
+  .catalog-service p, .catalog-diagnosis p, li { font-size: 14px; line-height: 1.85; }
+  .catalog-service p { margin-top: 16px; }
+  ul { padding-left: 19px; }
+  li + li { margin-top: 7px; }
+  .catalog-value { border-top: 1px solid #daddE6; margin-top: 23px; }
+  .catalog-value p { margin-top: 0; }
+  .catalog-link { display: inline-flex; align-items: center; gap: 12px; color: #0a1267; font-size: 12px; font-weight: 800; margin-top: 26px; }
+  .catalog-link svg, .catalog-action svg { width: 20px; height: 20px; flex: 0 0 auto; }
+  .catalog-diagnosis { scroll-margin-top: 36px; margin-top: 74px; padding: 52px; background: #0a1267; color: #fff; display: grid; grid-template-columns: 1fr 1fr; gap: 65px; }
+  .catalog-diagnosis h2 { font-size: clamp(30px, 3vw, 42px); line-height: 1.25; margin: 22px 0; max-width: 420px; }
+  .catalog-free { display: inline-block; padding: 8px 12px; background: #e4eaff; color: #0a1267; font-size: 11px; letter-spacing: .12em; font-weight: 800; }
+  .catalog-diagnosis h3 { margin-top: 0; }
+  .catalog-diagnosis p { color: #e4e8ff; margin-top: 20px; }
+  .catalog-action { display: inline-flex; align-items: center; gap: 18px; background: #fff; color: #0a1267; padding: 16px 20px; font-size: 12px; font-weight: 800; margin-top: 24px; }
+  :global(.service-demo1) .catalog-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 26px; }
+  :global(.service-demo1) .catalog-service { background: #fff; border: 1px solid #e1e5ee; padding: 35px; box-shadow: 0 9px 24px #0a126705; }
+  :global(.service-demo1) .catalog-marker { padding-bottom: 25px; font-weight: 700; }
+  :global(.service-demo2) .catalog-service { display: grid; grid-template-columns: 170px 1fr; padding: 45px 0; border-bottom: 1px solid #d9dde7; }
+  :global(.service-demo2) .catalog-marker { flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 30px; }
+  :global(.service-demo2) .catalog-marker > span { font-size: 44px; font-weight: 500; }
+  :global(.service-demo2) .catalog-copy { display: grid; grid-template-columns: 1fr 1fr; gap: 0 42px; }
+  :global(.service-demo2) .catalog-copy > h2, :global(.service-demo2) .catalog-copy > p, :global(.service-demo2) .catalog-link { grid-column: 1 / -1; }
+  :global(.service-demo2) .catalog-copy > ul { grid-column: 1; }
+  :global(.service-demo2) .catalog-value { grid-column: 2; grid-row: 3 / 5; border: 0; margin-top: 0; }
+  :global(.service-demo3) .catalog-service { display: grid; grid-template-columns: 85px 1fr; border-top: 1px solid #cfd0d3; padding: 48px 0; }
+  :global(.service-demo3) .catalog-marker { flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 26px; font-family: Georgia, serif; font-size: 22px; }
+  :global(.service-demo3) .catalog-service h2, :global(.service-demo3) .catalog-diagnosis h2 { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; font-size: clamp(27px, 3vw, 38px); }
+  :global(.service-demo3) .catalog-diagnosis { background: #ece8dd; color: #262c42; border-block: 1px solid #c5c4c0; }
+  :global(.service-demo3) .catalog-diagnosis p { color: #505569; }
+  :global(.service-demo3) .catalog-free, :global(.service-demo3) .catalog-action { background: #0a1267; color: #fff; }
+  @media (max-width: 700px) {
+    :global(.service-demo1) .catalog-list { grid-template-columns: 1fr; }
+    :global(.service-demo1) .catalog-service { padding: 27px; }
+    :global(.service-demo2) .catalog-service, :global(.service-demo3) .catalog-service { grid-template-columns: 1fr; gap: 25px; }
+    :global(.service-demo2) .catalog-marker, :global(.service-demo3) .catalog-marker { flex-direction: row; align-items: center; justify-content: space-between; }
+    :global(.service-demo2) .catalog-copy { display: block; }
+    .catalog-diagnosis { grid-template-columns: 1fr; padding: 30px 25px; gap: 30px; margin-top: 40px; }
+  }
+</style>

@@ -1,7 +1,10 @@
 ---
 import Brand from './Brand.astro';
+import JJBrand from './JJBrand.astro';
 import Icon from './Icon.astro';
 import { company, navigation } from '../data/site';
+interface Props { branded?: boolean; servicesHref?: string; }
+const { branded = false, servicesHref = '#servicios' } = Astro.props;
 ---
 <div class="utility-bar">
   <div class="container utility-inner">
@@ -11,10 +14,10 @@ import { company, navigation } from '../data/site';
 </div>
 <header class="site-header">
   <div class="container header-inner">
-    <Brand />
+    {branded ? <JJBrand /> : <Brand />}
     <button class="menu-toggle" type="button" aria-controls="primary-navigation" aria-expanded="false" aria-label="Abrir menú de navegación" hidden><span></span><span></span></button>
     <nav id="primary-navigation" aria-label="Navegación principal">
-      {navigation.map((item) => <a href={item.href}>{item.label}</a>)}
+      {navigation.map((item) => <a href={item.href === '#servicios' ? servicesHref : item.href}>{item.label}</a>)}
       <a class="button button-small" href="#contacto">Solicitar diagnóstico <Icon /></a>
     </nav>
   </div>
