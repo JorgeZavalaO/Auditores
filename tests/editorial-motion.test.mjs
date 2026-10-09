@@ -55,7 +55,7 @@ function motionHarness({ reduced = false, mediaSupported = true, observerSupport
 
 test('approved demo branding and immutable historical styles retain their source contracts', () => {
   const baselines = {
-    'src/components/DemoOneLanding.astro': 'EE56688EEFFF916ECFAFE6F4BAD679A50E863F38091FF8961F03C037C32B9B1B',
+    'src/components/DemoOneLanding.astro': '51AA7F7E5D4A0839A759436B4448FA8FAF694C79306424C6235A708636AD7A99',
     'src/components/CorporateLanding.astro': '27EF9BDE491BE91F8F66CA142C39E171263F70F4F26712324243E24AE4D1A4C3',
     'src/data/site.ts': '85E8759A6EE8D7878FBB40DA33011C1A5BF70D3AFD355537AE521EA2D1D301CD',
     'src/data/corporate.ts': '817CF89593564CF596F9E8E8BC35ADD4D91BED3ADF2E1DB3317365021BB241E3',

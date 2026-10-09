@@ -34,7 +34,12 @@ function assertSemanticDemo(html, output, requireForm = true) {
     assert.ok(existsSync(join(output, match[1])), `Missing demo image: ${match[1]}`);
     assert.match(match[0], /width="\d+"/);
     assert.match(match[0], /height="\d+"/);
-    assert.match(match[0], /alt="[^"]+"/);
+    if (/\salt(?:=""|(?=\s|>))/.test(match[0])) {
+      const copy = html.match(/<div class="logo-group logo-copy" aria-hidden="true"[^>]*>([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/)?.[1];
+      assert.ok(copy?.includes(match[0]), 'Empty alt is allowed only inside the hidden carousel copy');
+      assert.match(match[0], /role="presentation"/);
+      assert.match(match[0], /aria-hidden="true"/);
+    } else assert.match(match[0], /alt="[^"]+"/);
   }
   if (requireForm) {
     assert.match(html, /<form[^>]+onsubmit="return false"/);
@@ -70,8 +75,21 @@ function normalizeVisibleMain(html) {
   return normalizeVisibleBody(main);
 }
 
+function normalizeDemoOneClients(html) {
+  return html.replace(/<section class="clients-section" aria-labelledby="clients-title">([\s\S]*?)<\/section>/, (_, section) => {
+    const heading = section.match(/<div class="clients-heading">[\s\S]*?<\/div>/)?.[0];
+    assert.ok(heading, 'Client-section heading must be preserved');
+    return `<section class="clients-section" aria-labelledby="clients-title">${heading}</section>`;
+  });
+}
+
+function normalizePreservedMain(html, route) {
+  const main = normalizeVisibleMain(html);
+  return route === 'demo1' ? normalizeDemoOneClients(main) : main;
+}
+
 function normalizeHistoricalHome(html, route) {
-  const body = normalizeVisibleBody(html);
+  const body = route === 'demo1' ? normalizeDemoOneClients(normalizeVisibleBody(html)) : normalizeVisibleBody(html);
   if (route === 'demo2') return body.replace('<a href="/demo2/servicios/">Servicios</a>', '');
   return body.replace(`href="/${route}/servicios/"`, 'href="#servicios"');
 }
@@ -129,6 +147,41 @@ function assertServicePages(output) {
     assert.ok(landing.includes(`href="${home}servicios/"`), `Home must link its own services page: ${home}`);
   }
   assertLocalDestinations(output);
+}
+
+function assertCarouselAndPreservation(output, compareMetadata = true) {
+  const demoOne = readFileSync(join(output, 'demo1/index.html'), 'utf8');
+  const section = demoOne.match(/<section class="clients-section"[^>]*>([\s\S]*?)<\/section>/)?.[1];
+  assert.ok(section);
+  assert.match(section, /data-client-carousel/);
+  assert.match(section, /class="logo-group logo-copy" aria-hidden="true"/);
+  const images = [...section.matchAll(/<img\b[^>]*>/g)].map((match) => match[0]);
+  assert.equal(images.length, 20);
+  for (const name of ['AQUARA', 'CMFC', 'DELPA', 'ECEL', 'HFP', 'MRTHREE', 'SANTOS', 'TRAIRE', 'VENMATIC', 'VIPE']) {
+    assert.equal(images.filter((image) => image.includes(`alt="${name}"`)).length, 1, `Client must be accessible once: ${name}`);
+  }
+  assert.equal(images.filter((image) => /\salt(?:=""|(?=\s|>))/.test(image) && image.includes('role="presentation"') && image.includes('aria-hidden="true"')).length, 10);
+  const imageSources = (group) => group.map((image) => image.match(/src="([^"]+)"/)[1]);
+  assert.deepEqual(imageSources(images.slice(0, 10)), imageSources(images.slice(10)), 'Repeated groups must have identical logo order');
+  for (const image of images) assert.match(image, /width="150" height="65"/);
+  assert.doesNotMatch(normalizeVisibleBody(section), /<a\b|tabindex=|is-enabled/);
+  assert.match(section, /<button[^>]*aria-controls="client-logo-track"[^>]*hidden\b[^>]*>Pausar movimiento/);
+  const snapshot = join(root, '.astro/demo1-carousel-render-baseline.json');
+  const previous = existsSync(snapshot) ? JSON.parse(readFileSync(snapshot, 'utf8')) : null;
+  for (const route of ['root', 'demo1', 'demo2', 'demo3', 'demo1/servicios', 'demo2/servicios', 'demo3/servicios']) {
+    const current = readFileSync(join(output, route === 'root' ? 'index.html' : `${route}/index.html`), 'utf8');
+    if (route !== 'demo1') assert.doesNotMatch(current, /data-client-carousel|client-logo-track/);
+    if (previous) {
+      const normalize = (html) => route === 'demo1' ? normalizeDemoOneClients(normalizeVisibleBody(html)) : normalizeVisibleBody(html);
+      assert.equal(normalize(current), normalize(previous[route]), `Carousel changed content outside demo1 client row: ${route}`);
+      if (compareMetadata) {
+        const normalizeHead = (html) => html.match(/<head>([\s\S]*?)<\/head>/)[1]
+          .replace(/href="\/_astro\/[^\"]+\.css"/g, 'href="[compiled-css]"')
+          .replace(/<style\b[\s\S]*?<\/style>/g, '');
+        assert.equal(normalizeHead(current), normalizeHead(previous[route]), `Carousel changed metadata: ${route}`);
+      }
+    }
+  }
 }
 
 function assertConfirmedBrand(html) {
@@ -280,7 +333,7 @@ test('generated preview contains semantic content, local assets and safe demo in
     assertSemanticDemo(demo, output);
     assertNotIndexable(demo);
   }
-  assert.equal(normalizeVisibleMain(demoOne), normalizeVisibleMain(html), 'Root and demo1 must have identical main content');
+  assert.equal(normalizeDemoOneClients(normalizeVisibleMain(demoOne)), normalizeDemoOneClients(normalizeVisibleMain(html)), 'Root and demo1 must have identical main content except the authorized client row');
   assert.match(demoTwo, /<title>Auditoría financiera y tributaria para empresas \| J&amp;J CONSULTORES Y AUDITORES<\/title>/);
   assert.match(demoTwo, /PARA MEDIANAS Y GRANDES EMPRESAS/);
   assert.match(demoTwo, /Una mirada independiente/);
@@ -313,7 +366,7 @@ test('generated preview contains semantic content, local assets and safe demo in
     const previous = JSON.parse(readFileSync(snapshotPath, 'utf8'));
     for (const [route, current] of Object.entries({ root: html, demo1: demoOne, demo2: demoTwo })) {
       if (route === 'root') assert.equal(normalizeVisibleBody(current), normalizeVisibleBody(previous[route]), 'Historical root changed');
-      else assert.equal(normalizeVisibleMain(current), normalizeVisibleMain(previous[route]), `Historical demo main changed: ${route}`);
+      else assert.equal(normalizePreservedMain(current, route), normalizePreservedMain(previous[route], route), `Historical demo main changed outside authorized client row: ${route}`);
     }
   }
   for (const demo of [demoOne, demoTwo, demoThree]) assertConfirmedBrand(demo);
@@ -327,7 +380,7 @@ test('generated preview contains semantic content, local assets and safe demo in
       assert.equal(current.match(/<title>(.*?)<\/title>/)?.[1], previous[route].match(/<title>(.*?)<\/title>/)?.[1]);
     }
     for (const [route, current] of Object.entries({ demo1: demoOne, demo2: demoTwo })) {
-      assert.equal(normalizeVisibleMain(current), normalizeVisibleMain(previous[route]), `Branding changed service content: ${route}`);
+      assert.equal(normalizePreservedMain(current, route), normalizePreservedMain(previous[route], route), `Branding changed service content outside authorized client row: ${route}`);
     }
   }
   const servicesSnapshotPath = join(root, '.astro', 'demo-services-render-baseline.json');
@@ -335,11 +388,12 @@ test('generated preview contains semantic content, local assets and safe demo in
     const previous = JSON.parse(readFileSync(servicesSnapshotPath, 'utf8'));
     assert.equal(normalizeVisibleBody(html), normalizeVisibleBody(previous.root), 'Services changed root');
     for (const [route, current] of Object.entries({ demo1: demoOne, demo2: demoTwo, demo3: demoThree })) {
-      assert.equal(normalizeVisibleMain(current), normalizeVisibleMain(previous[route]), `Services changed home content or forms: ${route}`);
+      assert.equal(normalizePreservedMain(current, route), normalizePreservedMain(previous[route], route), `Services changed home content or forms outside authorized client row: ${route}`);
       assert.equal(normalizeHistoricalHome(current, route), normalizeHistoricalHome(previous[route], route), `Services changed home outside authorized navigation: ${route}`);
     }
   }
   assertServicePages(output);
+  assertCarouselAndPreservation(output);
 });
 
 test('configured production emits matching canonical, social metadata, schema and sitemap', () => {
@@ -375,4 +429,6 @@ test('configured production emits matching canonical, social metadata, schema an
     readFileSync(join(output, 'demo3', 'index.html'), 'utf8'),
   );
   assertServicePages(output);
+  // Preview snapshots have no production SEO; body-only preservation remains identical.
+  assertCarouselAndPreservation(output, false);
 });

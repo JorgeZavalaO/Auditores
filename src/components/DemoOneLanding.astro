@@ -7,6 +7,7 @@ import Icon from './Icon.astro';
 import SectionHeading from './SectionHeading.astro';
 import ServiceCard from './ServiceCard.astro';
 import Contact from './Contact.astro';
+import ClientLogoCarousel from './ClientLogoCarousel.astro';
 import { clients, featuredServices, supportingServices, process, faqs } from '../data/site';
 import team from '../assets/photos/team.jpg';
 import advisory from '../assets/photos/advisory.jpg';
@@ -43,7 +44,7 @@ const metadata = demo ? {
 
     <section class="clients-section" aria-labelledby="clients-title">
       <div class="container"><div class="clients-heading"><h2 id="clients-title">Empresas que forman parte de nuestro camino</h2><span>Relaciones construidas con compromiso</span></div>
-        <div class="client-logos">{clients.map((client) => <div class="client-logo"><Image src={client.image} alt={client.name} width={150} height={65} fit="contain" format="webp" loading="lazy" /></div>)}</div>
+        {demo ? <ClientLogoCarousel /> : <div class="client-logos">{clients.map((client) => <div class="client-logo"><Image src={client.image} alt={client.name} width={150} height={65} fit="contain" format="webp" loading="lazy" /></div>)}</div>}
       </div>
     </section>
 

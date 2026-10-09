@@ -1,0 +1,97 @@
+---
+import { Image } from 'astro:assets';
+import { clients } from '../data/site';
+interface Props { trackId?: string; }
+const { trackId = 'client-logo-track' } = Astro.props;
+---
+<div class="client-carousel" data-client-carousel>
+  <div class="logo-viewport">
+    <div class="logo-track" id={trackId}>
+      <div class="logo-group">
+        {clients.map((client) => <div class="carousel-logo"><Image src={client.image} alt={client.name} width={150} height={65} fit="contain" format="webp" loading="lazy" /></div>)}
+      </div>
+      <div class="logo-group logo-copy" aria-hidden="true">
+        {clients.map((client) => <div class="carousel-logo"><Image src={client.image} alt="" role="presentation" aria-hidden="true" width={150} height={65} fit="contain" format="webp" loading="lazy" /></div>)}
+      </div>
+    </div>
+  </div>
+  <div class="carousel-controls">
+    <span class="carousel-static-note">Vista estática de los logotipos de clientes.</span>
+    <button type="button" class="carousel-toggle" aria-controls={trackId} hidden>Pausar movimiento</button>
+  </div>
+</div>
+<script>
+  document.querySelectorAll<HTMLElement>('[data-client-carousel]').forEach((carousel) => {
+    const control = carousel.querySelector<HTMLButtonElement>('.carousel-toggle');
+    const note = carousel.querySelector<HTMLElement>('.carousel-static-note');
+    if (!control || !note || typeof window.matchMedia !== 'function') return;
+    let media: MediaQueryList;
+    try { media = window.matchMedia('(prefers-reduced-motion: reduce)'); }
+    catch { return; }
+    let userPaused = false;
+    let hovered = false;
+    let focused = false;
+    const update = () => {
+      const enabled = !media.matches;
+      carousel.classList.toggle('is-enabled', enabled);
+      carousel.classList.toggle('is-paused', userPaused || hovered || focused);
+      control.hidden = !enabled;
+      note.hidden = enabled;
+      control.textContent = userPaused ? 'Reanudar movimiento' : 'Pausar movimiento';
+    };
+    control.addEventListener('click', () => { userPaused = !userPaused; update(); });
+    carousel.addEventListener('mouseenter', () => { hovered = true; update(); });
+    carousel.addEventListener('mouseleave', () => { hovered = false; update(); });
+    carousel.addEventListener('focusin', () => { focused = true; update(); });
+    carousel.addEventListener('focusout', (event) => {
+      focused = carousel.contains(event.relatedTarget as Node | null);
+      update();
+    });
+    if (typeof media.addEventListener === 'function') media.addEventListener('change', update);
+    else {
+      const legacyMedia = media as unknown as { addListener?: (listener: () => void) => void };
+      if (typeof legacyMedia.addListener === 'function') legacyMedia.addListener(update);
+    }
+    update();
+  });
+</script>
+<style>
+  .client-carousel { min-width: 0; }
+  .logo-group { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 24px; align-items: center; }
+  .logo-copy { display: none; }
+  .carousel-logo { display: flex; align-items: center; justify-content: center; height: 65px; min-width: 0; }
+  .carousel-logo img { width: 100%; max-height: 65px; object-fit: contain; }
+  .carousel-controls { display: flex; justify-content: flex-end; margin-top: 16px; min-height: 30px; }
+  .carousel-static-note { font-size: 10px; color: #5d657d; line-height: 1.8; }
+  .carousel-toggle { background: #fff; color: #0a1267; border: 1px solid #d6dce8; padding: 7px 12px; font-size: 11px; font-weight: 700; }
+  [hidden] { display: none; }
+  .is-enabled .logo-viewport { overflow: hidden; }
+  .is-enabled .logo-track { display: flex; width: max-content; animation: client-logos-right 56s linear infinite; }
+  .is-enabled .logo-group { display: flex; flex: 0 0 auto; gap: 42px; padding-right: 42px; }
+  .is-enabled .carousel-logo { width: 150px; flex: 0 0 150px; }
+  .is-enabled.is-paused .logo-track,
+  .is-enabled:hover .logo-track,
+  .is-enabled:focus-within .logo-track { animation-play-state: paused; }
+  @keyframes client-logos-right {
+    from { transform: translateX(-50%); }
+    to { transform: translateX(0); }
+  }
+  @media (max-width: 900px) {
+    .logo-group { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 18px; }
+  }
+  @media (max-width: 650px) {
+    .carousel-logo { height: 42px; }
+    .carousel-logo img { max-height: 42px; }
+    .is-enabled .carousel-logo { width: 110px; flex-basis: 110px; }
+    .is-enabled .logo-group { gap: 28px; padding-right: 28px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .is-enabled .logo-track { display: block; width: auto; animation: none; transform: none; }
+    .is-enabled .logo-group { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 24px; padding: 0; }
+    .is-enabled .carousel-logo { width: auto; }
+    .is-enabled .logo-copy, .carousel-toggle { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) and (max-width: 900px) {
+    .is-enabled .logo-group { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 18px; }
+  }
+</style>
