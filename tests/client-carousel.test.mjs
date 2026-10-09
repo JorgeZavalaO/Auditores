@@ -8,111 +8,111 @@ const source = readFileSync(new URL('../src/components/ClientLogoCarousel.astro'
 const script = source.match(/<script>([\s\S]*?)<\/script>/)[1];
 const executable = ts.transpileModule(script, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
 
-function harness({ reduced = false, api = 'modern' } = {}) {
+function harness({ javascript = true, missingViewport = false, media = 'missing' } = {}) {
   const classes = new Set();
   const events = new Map();
-  const control = { hidden: true, textContent: 'Pausar movimiento', addEventListener: (name, action) => events.set(`button:${name}`, action) };
-  const note = { hidden: false };
-  const carousel = {
-    classList: { toggle: (name, enabled) => {
-      if (name === 'is-enabled' && enabled) assert.ok(events.has('button:click'), 'Bind the pause control before starting motion');
-      return enabled ? classes.add(name) : classes.delete(name);
-    } },
-    querySelector: (selector) => selector === '.carousel-toggle' ? control : note,
+  const attributes = new Map();
+  const instructions = { id: 'test-instructions', hidden: true, textContent: '' };
+  const viewport = {
     addEventListener: (name, action) => events.set(name, action),
-    contains: (element) => element === control,
+    setAttribute: (name, value) => attributes.set(name, value),
   };
-  const media = { matches: reduced };
-  let change;
-  if (api === 'legacy') media.addListener = (action) => { change = action; };
-  else media.addEventListener = (_, action) => { change = action; };
+  const carousel = {
+    classList: {
+      add: (name) => {
+        assert.ok(events.has('keydown'), 'Bind keyboard pause before starting motion');
+        assert.equal(viewport.tabIndex, 0);
+        assert.equal(attributes.get('aria-describedby'), instructions.id);
+        classes.add(name);
+      },
+      toggle: (name, enabled) => enabled ? classes.add(name) : classes.delete(name),
+    },
+    querySelector: (selector) => selector === '.logo-viewport' ? missingViewport ? null : viewport : instructions,
+  };
   const window = {};
-  if (api !== 'missing') window.matchMedia = () => {
-    if (api === 'throwing') throw new Error('Unsupported media query');
-    return media;
+  if (media !== 'missing') window.matchMedia = () => {
+    if (media === 'throwing') throw new Error('Unavailable API');
+    return { matches: media === 'reduced' };
   };
-  runInNewContext(executable, { window, document: { querySelectorAll: () => [carousel] } });
+  if (javascript) runInNewContext(executable, { window, document: { querySelectorAll: () => [carousel] } });
   return {
-    classes, control, note,
-    emit: (event, relatedTarget = null) => events.get(event)?.({ relatedTarget }),
-    preference: (value) => { media.matches = value; change?.(); },
+    classes, events, viewport, instructions, attributes,
+    emit: (name, details = {}) => {
+      const event = { repeat: false, ...details, prevented: false, preventDefault() { this.prevented = true; } };
+      events.get(name)?.(event);
+      return event;
+    },
   };
 }
 
-test('carousel is static by default and the rightward loop has equal groups including the seam gap', () => {
-  assert.doesNotMatch(source.split('<script>')[0], /is-enabled/);
+test('static HTML and equal group geometry support a seamless rightward loop without buttons', () => {
+  const markup = source.split('<script>')[0];
+  assert.doesNotMatch(markup, /is-enabled|<button\b|role="button"|tabindex=/);
+  assert.match(markup, /role="region" aria-label="Logotipos de clientes"/);
   assert.match(source, /\.logo-copy \{ display: none; \}/);
-  assert.match(source, /animation: client-logos-right 56s linear infinite/);
   assert.match(source, /from \{ transform: translateX\(-50%\); \}/);
   assert.match(source, /to \{ transform: translateX\(0\); \}/);
-  assert.match(source, /\.is-enabled \.logo-track \{ display: flex; width: max-content;/);
-  assert.match(source, /gap: 42px; padding-right: 42px;/);
-  assert.match(source, /gap: 28px; padding-right: 28px;/);
-  assert.match(source, /@media \(prefers-reduced-motion: reduce\)/);
-  assert.match(source, /animation: none; transform: none/);
-  assert.match(source, /\.is-enabled:hover \.logo-track,/);
-  assert.match(source, /\.is-enabled:focus-within \.logo-track \{ animation-play-state: paused;/);
+  assert.match(source, /\.is-enabled \.logo-track \{ display: flex; width: max-content; \}/);
+  assert.match(source, /\.client-carousel\.is-enabled \.logo-track \{ animation: client-logos-right 56s linear infinite !important; \}/);
+  assert.match(source, /\.client-carousel\.is-enabled \.logo-viewport:hover \.logo-track \{ animation-play-state: paused !important; \}/);
+  assert.doesNotMatch(source, /matchMedia|motion-opt-in|carousel-toggle|animation-play-state:[^}]*focus/);
+  assert.doesNotMatch(script, /focusin|focusout|localStorage|sessionStorage/);
+  assert.match(source, /\.logo-viewport:focus-visible \{ outline: 3px solid #0a1267;/);
   for (const [width, gap] of [[150, 42], [110, 28]]) {
+    assert.ok(source.includes(`gap: ${gap}px; padding-right: ${gap}px;`));
     const group = 10 * width + 9 * gap + gap;
-    const track = 2 * group;
-    assert.equal(track * 0.5, group, 'A half-track shift must exactly equal one group');
-    assert.equal(group - 10 * width - 9 * gap, gap, 'The seam gap must match internal gaps');
+    assert.equal((2 * group) * 0.5, group, 'A half-track shift must equal exactly one group');
+    assert.equal(group - 10 * width - 9 * gap, gap, 'The seam must equal the internal gap');
   }
 });
 
-test('normal motion activates only with a ready control and supports persistent pause/resume', () => {
-  const state = harness();
-  assert.ok(state.classes.has('is-enabled'));
-  assert.equal(state.control.hidden, false);
-  assert.equal(state.note.hidden, true);
-  state.emit('button:click');
-  assert.ok(state.classes.has('is-paused'));
-  assert.equal(state.control.textContent, 'Reanudar movimiento');
-  state.emit('button:click');
-  assert.equal(state.classes.has('is-paused'), false);
-  assert.equal(state.control.textContent, 'Pausar movimiento');
+test('ready enhancement starts automatically regardless of reduced preference or media API availability', () => {
+  for (const media of ['normal', 'reduced', 'missing', 'throwing']) {
+    const state = harness({ media });
+    assert.ok(state.classes.has('is-enabled'));
+    assert.equal(state.classes.has('is-paused'), false);
+    assert.equal(state.instructions.hidden, false);
+    assert.match(state.instructions.textContent, /Movimiento automático/);
+  }
 });
 
-test('hover and focus temporarily pause without clearing a persistent user pause', () => {
-  const state = harness();
-  state.emit('mouseenter');
-  assert.ok(state.classes.has('is-paused'));
-  state.emit('mouseleave');
-  assert.equal(state.classes.has('is-paused'), false);
-  state.emit('focusin');
-  state.emit('focusout', state.control);
-  assert.ok(state.classes.has('is-paused'));
-  state.emit('focusout');
-  assert.equal(state.classes.has('is-paused'), false);
-  state.emit('button:click');
-  state.emit('mouseenter');
-  state.emit('mouseleave');
-  state.emit('focusin');
-  state.emit('focusout');
-  assert.ok(state.classes.has('is-paused'));
-});
-
-test('reduced motion and unsupported media APIs keep the original static presentation', () => {
-  for (const options of [{ reduced: true }, { api: 'missing' }, { api: 'throwing' }]) {
+test('without JavaScript or complete enhancement markup the static baseline remains untouched', () => {
+  for (const options of [{ javascript: false }, { missingViewport: true }]) {
     const state = harness(options);
     assert.equal(state.classes.has('is-enabled'), false);
-    assert.equal(state.control.hidden, true);
-    assert.equal(state.note.hidden, false);
+    assert.equal(state.viewport.tabIndex, undefined);
+    assert.equal(state.instructions.hidden, true);
   }
 });
 
-test('modern and legacy preference changes stop animation and preserve the user pause', () => {
-  for (const api of ['modern', 'legacy']) {
-    const state = harness({ api });
-    state.emit('button:click');
-    state.preference(true);
-    assert.equal(state.classes.has('is-enabled'), false);
-    assert.equal(state.control.hidden, true);
-    assert.equal(state.note.hidden, false);
-    state.preference(false);
-    assert.ok(state.classes.has('is-enabled'));
-    assert.ok(state.classes.has('is-paused'));
-    state.emit('button:click');
-    assert.equal(state.classes.has('is-paused'), false);
-  }
+test('hover temporarily pauses while Space and Escape provide persistent keyboard pause', () => {
+  const state = harness();
+  state.emit('mouseenter');
+  assert.ok(state.classes.has('is-paused'));
+  state.emit('mouseleave');
+  assert.equal(state.classes.has('is-paused'), false);
+  assert.equal(state.emit('keydown', { key: ' ' }).prevented, true);
+  assert.ok(state.classes.has('is-paused'));
+  state.emit('mouseenter');
+  state.emit('mouseleave');
+  assert.ok(state.classes.has('is-paused'), 'Hover exit must not clear the keyboard pause');
+  state.emit('keydown', { key: ' ' });
+  assert.equal(state.classes.has('is-paused'), false);
+  assert.equal(state.emit('keydown', { key: 'Escape' }).prevented, true);
+  assert.ok(state.classes.has('is-paused'));
+  assert.match(state.instructions.textContent, /Movimiento pausado/);
+});
+
+test('keyboard resumption works while focused, ignores held Space repeats and preserves unrelated keys', () => {
+  const state = harness();
+  state.emit('focusin');
+  assert.equal(state.classes.has('is-paused'), false);
+  state.emit('keydown', { key: 'Escape' });
+  const repeat = state.emit('keydown', { key: ' ', repeat: true });
+  assert.equal(repeat.prevented, true);
+  assert.ok(state.classes.has('is-paused'));
+  state.emit('keydown', { code: 'Space' });
+  assert.equal(state.classes.has('is-paused'), false);
+  assert.equal(state.emit('keydown', { key: 'ArrowRight' }).prevented, false);
+  assert.equal(state.classes.has('is-paused'), false);
 });

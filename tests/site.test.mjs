@@ -34,12 +34,7 @@ function assertSemanticDemo(html, output, requireForm = true) {
     assert.ok(existsSync(join(output, match[1])), `Missing demo image: ${match[1]}`);
     assert.match(match[0], /width="\d+"/);
     assert.match(match[0], /height="\d+"/);
-    if (/\salt(?:=""|(?=\s|>))/.test(match[0])) {
-      const copy = html.match(/<div class="logo-group logo-copy" aria-hidden="true"[^>]*>([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/)?.[1];
-      assert.ok(copy?.includes(match[0]), 'Empty alt is allowed only inside the hidden carousel copy');
-      assert.match(match[0], /role="presentation"/);
-      assert.match(match[0], /aria-hidden="true"/);
-    } else assert.match(match[0], /alt="[^"]+"/);
+    assert.match(match[0], /alt="[^"]+"/);
   }
   if (requireForm) {
     assert.match(html, /<form[^>]+onsubmit="return false"/);
@@ -166,14 +161,20 @@ function assertCarouselAndPreservation(output, compareMetadata = true) {
   const images = [...section.matchAll(/<img\b[^>]*>/g)].map((match) => match[0]);
   assert.equal(images.length, 20);
   for (const name of ['AQUARA', 'CMFC', 'DELPA', 'ECEL', 'HFP', 'MRTHREE', 'SANTOS', 'TRAIRE', 'VENMATIC', 'VIPE']) {
-    assert.equal(images.filter((image) => image.includes(`alt="${name}"`)).length, 1, `Client must be accessible once: ${name}`);
+    assert.equal(images.slice(0, 10).filter((image) => image.includes(`alt="${name}"`)).length, 1, `Client must be accessible once: ${name}`);
+    assert.equal(images.slice(10).filter((image) => image.includes(`alt="${name}"`)).length, 1, `Hidden copy must retain its client name: ${name}`);
   }
-  assert.equal(images.filter((image) => /\salt(?:=""|(?=\s|>))/.test(image) && image.includes('role="presentation"') && image.includes('aria-hidden="true"')).length, 10);
+  for (const image of images) assert.match(image, /alt="[^"]+"/);
+  const copy = section.match(/<div class="logo-group logo-copy" aria-hidden="true"[^>]*>([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/)?.[1];
+  assert.equal((copy?.match(/<img\b/g) || []).length, 10, 'Exactly ten images must be hidden by the repeated-group wrapper');
   const imageSources = (group) => group.map((image) => image.match(/src="([^"]+)"/)[1]);
   assert.deepEqual(imageSources(images.slice(0, 10)), imageSources(images.slice(10)), 'Repeated groups must have identical logo order');
   for (const image of images) assert.match(image, /width="150" height="65"/);
   assert.doesNotMatch(normalizeVisibleBody(section), /<a\b|tabindex=|is-enabled/);
-  assert.match(section, /<button[^>]*aria-controls="client-logo-track"[^>]*hidden\b[^>]*>Pausar movimiento/);
+  assert.doesNotMatch(section, /<button\b|role="button"|carousel-toggle|carousel-static-note/);
+  assert.match(section, /class="logo-viewport" role="region" aria-label="Logotipos de clientes"/);
+  assert.match(section, /id="client-logo-track-instructions"[^>]*hidden/);
+  assert.match(section, /Espacio: pausar o reanudar\. Esc: pausar\./);
   const snapshot = join(root, '.astro/demo1-carousel-render-baseline.json');
   const previous = existsSync(snapshot) ? JSON.parse(readFileSync(snapshot, 'utf8')) : null;
   for (const route of ['root', 'demo1', 'demo2', 'demo3', 'demo1/servicios', 'demo2/servicios', 'demo3/servicios']) {
