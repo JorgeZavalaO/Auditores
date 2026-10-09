@@ -1,0 +1,137 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from './Header.astro';
+import Footer from './Footer.astro';
+import Icon from './Icon.astro';
+import { aboutCompany } from '../data/aboutCompany';
+import team from '../assets/photos/team.jpg';
+import advisory from '../assets/photos/advisory.jpg';
+const home = '/demo1/';
+---
+<BaseLayout demo title={`Nosotros | ${aboutCompany.name}`} description="Conoce J&J CONSULTORES Y AUDITORES: una empresa peruana orientada a MYPES. Nuestra experiencia profesional, misión, visión y valores." siteName={aboutCompany.name} favicon="/jj-favicon.svg">
+  <Header branded servicesHref="/demo1/servicios/" aboutHref="/demo1/nosotros/" homeHref={home} anchorBase={home} aboutCurrent />
+  <main id="contenido" class="about-company-page">
+    <section class="ac-hero">
+      <div class="ac-container">
+        <nav class="ac-breadcrumb" aria-label="Ruta de navegación"><a href={home}>Inicio</a><span aria-hidden="true">/</span><span>Nosotros</span></nav>
+        <div class="ac-hero-grid">
+          <div class="ac-hero-copy"><span class="ac-eyebrow">UNA FIRMA PERUANA. UNA RELACIÓN CERCANA.</span><h1>Entendemos tu negocio.<br /><span>Acompañamos tus decisiones.</span></h1><p>Somos J&J CONSULTORES Y AUDITORES. Trabajamos para que las MYPES del Perú encuentren en su información una base más clara para gestionar y avanzar.</p><a class="button" href={`${home}#contacto`}>Conversemos sobre tu empresa <Icon /></a><a class="ac-hero-anchor" href="#experiencia">Conoce nuestra experiencia <Icon /></a></div>
+          <figure class="ac-hero-visual"><Image src={team} alt="Profesionales colaborando en una reunión de trabajo, fotografía ilustrativa" widths={[500, 800, 1100]} sizes="(max-width: 900px) 90vw, 43vw" format="webp" loading="eager" fetchpriority="high" /><figcaption>Fotografía ilustrativa · No representa al equipo de la firma</figcaption><div class="ac-photo-note"><Icon name="shield" /><span>Integridad en el trabajo.<br /><strong>Cercanía en la relación.</strong></span></div></figure>
+        </div>
+      </div>
+    </section>
+    <section id="experiencia" class="ac-story ac-container" aria-labelledby="experience-title">
+      <div class="ac-story-copy"><span class="ac-eyebrow">QUIÉNES SOMOS</span><h2 id="experience-title">Experiencia profesional,<br />con una mirada humana.</h2>{aboutCompany.story.map((paragraph) => <p>{paragraph}</p>)}<span class="ac-legal-name">{aboutCompany.legalName}</span></div>
+      <aside class="ac-experience" aria-label="Experiencia de nuestros socios"><span class="ac-eyebrow">LA TRAYECTORIA DE NUESTROS SOCIOS</span><strong>{aboutCompany.partnerExperienceYears}<span>años</span></strong><p>de experiencia profesional<br /><b>de nuestros socios</b></p><div class="ac-sectors"><span>EXPERIENCIA EN LOS SECTORES</span><ul>{aboutCompany.sectors.map((sector) => <li><Icon name="check" />{sector}</li>)}</ul></div><span class="ac-experience-note">Experiencia aplicada a las necesidades de las MYPES.</span></aside>
+    </section>
+    <section class="ac-purpose" aria-labelledby="purpose-title">
+      <div class="ac-container"><div class="ac-section-heading"><span class="ac-eyebrow">LO QUE NOS GUÍA</span><h2 id="purpose-title">Un propósito claro.<br />Una visión de largo plazo.</h2><p>Nuestra misión define el trabajo de hoy. Nuestra visión expresa el futuro que buscamos construir junto a las MYPES.</p></div><div class="ac-purpose-grid"><article id="mision"><span class="ac-purpose-icon"><Icon name="document" /></span><h3>Nuestra misión</h3><p>{aboutCompany.mission}</p></article><article id="vision"><span class="ac-purpose-icon"><Icon name="screen" /></span><h3>Nuestra visión</h3><p>{aboutCompany.vision}</p><span class="ac-aspiration">Una aspiración que orienta nuestro trabajo.</span></article></div></div>
+    </section>
+    <section id="valores" class="ac-values ac-container" aria-labelledby="values-title">
+      <div class="ac-values-intro"><div><span class="ac-eyebrow">NUESTROS VALORES</span><h2 id="values-title">La confianza también<br />se construye en los detalles.</h2></div><p>Ocho principios que orientan nuestra relación con cada cliente y la forma en que asumimos cada encargo.</p></div><div class="ac-values-grid">{aboutCompany.values.map((value, index) => <article><div class="ac-value-top"><span>0{index + 1}</span><Icon name={value.icon} /></div><h3>{value.title}</h3><p>{value.description}</p></article>)}</div>
+    </section>
+    <section class="ac-accompaniment"><div class="ac-container ac-accompaniment-grid"><figure><Image src={advisory} alt="Revisión de información contable y documentación en una mesa, fotografía ilustrativa" widths={[500, 800, 1100]} sizes="(max-width: 900px) 90vw, 43vw" format="webp" loading="lazy" /><figcaption>Fotografía ilustrativa</figcaption></figure><div><span class="ac-eyebrow">CERCA DE TU EMPRESA</span><h2>Información que puedas entender.<br />Una relación en la que puedas confiar.</h2><p>Escuchar los objetivos de tu negocio, explicar lo relevante y proponer acciones preventivas forma parte de nuestro compromiso.</p><p>La tecnología nos ayuda a organizar mejor los procesos. El trato directo permite que esa información tenga sentido para quienes toman las decisiones.</p><a class="ac-text-link" href="/demo1/servicios/">Explora cómo podemos acompañarte <Icon /></a></div></div></section>
+    <section class="ac-next" aria-labelledby="next-title"><div class="ac-container"><div><span class="ac-eyebrow">COMENCEMOS CON UNA CONVERSACIÓN</span><h2 id="next-title">Conozcamos el momento<br />de tu empresa.</h2><p>Cuéntanos qué necesitas. Podemos empezar por un diagnóstico contable y tributario gratuito.</p><span>Datos de contacto de ejemplo. El formulario de la demo no envía ni guarda información.</span></div><div class="ac-next-actions"><a class="button" href={`${home}#contacto`}>Solicitar diagnóstico gratuito <Icon /></a><a href="/demo1/servicios/">Ver nuestros servicios <Icon /></a></div></div></section>
+  </main>
+  <Footer branded servicesHref="/demo1/servicios/" aboutHref="/demo1/nosotros/" homeHref={home} anchorBase={home} />
+</BaseLayout>
+<style>
+  .about-company-page { color: #141a38; }
+  .ac-container { width: min(1160px, calc(100% - 80px)); margin-inline: auto; }
+  .ac-eyebrow { display: block; color: #0a1267; font-size: 10px; font-weight: 800; letter-spacing: .12em; line-height: 1.7; }
+  .ac-hero { background: #f4f6fb; padding: 30px 0 70px; }
+  .ac-breadcrumb { display: flex; gap: 15px; color: #5d657d; font-size: 11px; margin-bottom: 38px; }
+  .ac-breadcrumb a { text-decoration: underline; text-underline-offset: 4px; }
+  .ac-hero-grid { display: grid; grid-template-columns: 1.12fr 1fr; align-items: center; gap: 70px; }
+  h1 { font-size: clamp(37px, 4.5vw, 58px); letter-spacing: -2px; line-height: 1.14; color: #0a1267; margin-top: 25px; }
+  h1 span { color: #3c50cf; }
+  .ac-hero-copy > p { font-size: 15px; line-height: 1.95; margin: 27px 0; max-width: 510px; }
+  .ac-hero-copy .button { font-size: 12px; }
+  .ac-hero-anchor { display: flex; align-items: center; gap: 13px; color: #0a1267; font-size: 11px; font-weight: 700; margin-top: 22px; }
+  .ac-hero-anchor svg { width: 17px; height: 17px; }
+  .ac-hero-visual { position: relative; margin: 0; padding-bottom: 33px; }
+  .ac-hero-visual > img { width: 100%; height: 425px; object-fit: cover; object-position: 65% center; }
+  figcaption { font-size: 9px; color: #5d657d; line-height: 1.8; margin-top: 12px; }
+  .ac-photo-note { position: absolute; bottom: 66px; left: -25px; display: flex; align-items: center; gap: 19px; background: #0a1267; color: #fff; padding: 22px 28px; box-shadow: 0 12px 30px #0a12671a; }
+  .ac-photo-note svg { width: 30px; height: 30px; }
+  .ac-photo-note span { font-size: 12px; line-height: 1.8; }
+  .ac-story { display: grid; grid-template-columns: 1.2fr .8fr; gap: 100px; padding-block: 95px; align-items: center; scroll-margin-top: 100px; }
+  h2 { font-size: clamp(29px, 3vw, 39px); color: #0a1267; letter-spacing: -1px; line-height: 1.25; }
+  .ac-story h2 { margin: 20px 0 25px; }
+  .ac-story-copy p { font-size: 14px; line-height: 1.95; margin-top: 16px; }
+  .ac-legal-name { display: block; font-size: 10px; color: #5d657d; font-weight: 700; letter-spacing: .03em; margin-top: 25px; }
+  .ac-experience { border-left: 4px solid #0a1267; background: #f4f6fb; padding: 37px 35px; }
+  .ac-experience > strong { display: flex; align-items: baseline; gap: 12px; font-size: 80px; color: #0a1267; line-height: 1; margin-top: 27px; letter-spacing: -4px; }
+  .ac-experience > strong > span { font-size: 22px; letter-spacing: -1px; }
+  .ac-experience > p { font-size: 14px; margin: 18px 0; line-height: 1.7; }
+  .ac-sectors { border-top: 1px solid #dce1ec; padding-top: 20px; margin-top: 24px; }
+  .ac-sectors > span { font-size: 9px; font-weight: 800; letter-spacing: .1em; color: #5d657d; }
+  .ac-sectors ul { list-style: none; padding: 0; margin: 15px 0 0; }
+  .ac-sectors li { display: flex; gap: 13px; align-items: center; font-size: 12px; color: #0a1267; padding-block: 7px; }
+  .ac-sectors svg { width: 17px; height: 17px; }
+  .ac-experience-note { display: block; font-size: 9px; line-height: 1.8; color: #5d657d; margin-top: 20px; }
+  .ac-purpose { background: #0a1267; color: #fff; padding-block: 80px; }
+  .ac-purpose .ac-eyebrow { color: #dbe2ff; }
+  .ac-section-heading { max-width: 650px; }
+  .ac-purpose h2 { color: #fff; margin: 20px 0; }
+  .ac-purpose .ac-section-heading > p { color: #dbe2ff; font-size: 14px; }
+  .ac-purpose-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 65px; margin-top: 45px; }
+  .ac-purpose-grid article { border-top: 1px solid #535ca0; padding-top: 30px; scroll-margin-top: 110px; }
+  .ac-purpose-icon { display: inline-flex; padding: 12px; background: #242e84; }
+  .ac-purpose-icon svg { width: 25px; height: 25px; }
+  .ac-purpose h3 { font-size: 23px; margin: 20px 0 16px; }
+  .ac-purpose-grid p { color: #e4e8ff; font-size: 13px; line-height: 1.95; }
+  .ac-aspiration { display: block; color: #dbe2ff; font-size: 10px; margin-top: 20px; }
+  .ac-values { padding-block: 90px; scroll-margin-top: 100px; }
+  .ac-values-intro { display: grid; grid-template-columns: 1.3fr 1fr; gap: 100px; align-items: end; margin-bottom: 42px; }
+  .ac-values-intro h2 { margin-top: 20px; }
+  .ac-values-intro > p { font-size: 14px; line-height: 1.95; }
+  .ac-values-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
+  .ac-values-grid article { border-top: 2px solid #dce1ec; padding-top: 23px; }
+  .ac-value-top { display: flex; justify-content: space-between; align-items: center; color: #5d657d; font-size: 10px; }
+  .ac-value-top svg { color: #0a1267; width: 22px; height: 22px; }
+  .ac-values-grid h3 { color: #0a1267; font-size: 17px; line-height: 1.4; margin: 20px 0 13px; }
+  .ac-values-grid p { font-size: 14px; line-height: 1.85; }
+  .ac-accompaniment { background: #f4f6fb; padding-block: 70px; }
+  .ac-accompaniment-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 85px; align-items: center; }
+  .ac-accompaniment figure { margin: 0; }
+  .ac-accompaniment img { width: 100%; height: 340px; object-fit: cover; }
+  .ac-accompaniment h2 { margin: 20px 0 24px; }
+  .ac-accompaniment p { font-size: 14px; margin-top: 17px; }
+  .ac-text-link { display: inline-flex; gap: 16px; align-items: center; color: #0a1267; font-size: 12px; font-weight: 800; margin-top: 28px; }
+  .ac-text-link svg { width: 20px; height: 20px; }
+  .ac-next { padding-block: 75px; }
+  .ac-next > div { display: flex; align-items: center; justify-content: space-between; gap: 50px; }
+  .ac-next h2 { margin: 18px 0 23px; }
+  .ac-next p { max-width: 540px; font-size: 14px; }
+  .ac-next span:not(.ac-eyebrow) { display: block; color: #5d657d; font-size: 10px; line-height: 1.8; margin-top: 18px; max-width: 510px; }
+  .ac-next-actions { flex-shrink: 0; }
+  .ac-next-actions .button { font-size: 12px; }
+  .ac-next-actions > a:last-child { display: flex; align-items: center; justify-content: center; gap: 13px; color: #0a1267; font-size: 12px; font-weight: 700; margin-top: 22px; }
+  .ac-next-actions > a:last-child svg { width: 18px; height: 18px; }
+  @media (max-width: 1000px) {
+    .ac-hero-grid, .ac-story { gap: 45px; }
+    .ac-values-grid { grid-template-columns: repeat(2, 1fr); gap: 35px; }
+    .ac-values-intro, .ac-accompaniment-grid { gap: 45px; }
+    .ac-hero-copy .button { padding-inline: 17px; }
+    .ac-next > div { display: block; }
+    .ac-next-actions { display: inline-block; margin-top: 30px; }
+  }
+  @media (max-width: 700px) {
+    .ac-container { width: calc(100% - 40px); }
+    .ac-hero-grid, .ac-story, .ac-purpose-grid, .ac-values-intro, .ac-accompaniment-grid { grid-template-columns: 1fr; gap: 35px; }
+    .ac-hero-visual { margin-top: 15px; }
+    .ac-hero-visual > img { height: 350px; }
+    .ac-photo-note { left: 0; padding: 18px 22px; }
+    .ac-story, .ac-values { padding-block: 60px; }
+    .ac-purpose, .ac-accompaniment { padding-block: 60px; }
+    h1 { letter-spacing: -1px; }
+    .ac-story h2, .ac-accompaniment h2 { letter-spacing: -.6px; }
+    .ac-experience { padding: 30px 26px; }
+    .ac-values-grid { grid-template-columns: 1fr; gap: 30px; }
+    .ac-accompaniment img { height: 280px; }
+    .ac-next { padding-block: 55px; }
+    .ac-next-actions .button { font-size: 11px; padding-inline: 17px; }
+  }
+</style>

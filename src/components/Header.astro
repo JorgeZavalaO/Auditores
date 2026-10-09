@@ -3,8 +3,16 @@ import Brand from './Brand.astro';
 import JJBrand from './JJBrand.astro';
 import Icon from './Icon.astro';
 import { company, navigation } from '../data/site';
-interface Props { branded?: boolean; servicesHref?: string; }
-const { branded = false, servicesHref = '#servicios' } = Astro.props;
+interface Props {
+  branded?: boolean;
+  servicesHref?: string;
+  aboutHref?: string;
+  homeHref?: string;
+  anchorBase?: string;
+  aboutCurrent?: boolean;
+}
+const { branded = false, servicesHref = '#servicios', aboutHref = '#nosotros', homeHref = '#inicio', anchorBase = '', aboutCurrent = false } = Astro.props;
+const navigationHref = (href: string) => href === '#servicios' ? servicesHref : href === '#nosotros' ? aboutHref : `${anchorBase}${href}`;
 ---
 <div class="utility-bar">
   <div class="container utility-inner">
@@ -14,11 +22,11 @@ const { branded = false, servicesHref = '#servicios' } = Astro.props;
 </div>
 <header class="site-header">
   <div class="container header-inner">
-    {branded ? <JJBrand /> : <Brand />}
+    {branded ? <JJBrand href={homeHref} /> : <Brand />}
     <button class="menu-toggle" type="button" aria-controls="primary-navigation" aria-expanded="false" aria-label="Abrir menú de navegación" hidden><span></span><span></span></button>
     <nav id="primary-navigation" aria-label="Navegación principal">
-      {navigation.map((item) => <a href={item.href === '#servicios' ? servicesHref : item.href}>{item.label}</a>)}
-      <a class="button button-small" href="#contacto">Solicitar diagnóstico <Icon /></a>
+      {navigation.map((item) => <a href={navigationHref(item.href)} aria-current={aboutCurrent && item.href === '#nosotros' ? 'page' : undefined}>{item.label}</a>)}
+      <a class="button button-small" href={`${anchorBase}#contacto`}>Solicitar diagnóstico <Icon /></a>
     </nav>
   </div>
 </header>

@@ -53,20 +53,22 @@ test('publication allowlist excludes source, secrets and documents', () => {
   for (const file of ['.env', 'source.js', 'company.docx', 'odd/tasks/preview.md', '_astro/file.map', '_astro/../.env', 'extra/index.html']) {
     assert.equal(allowedFile(file), false, file);
   }
-  for (const file of ['index.html', 'demo2/servicios/index.html', '_astro/font.woff', '_astro/image.webp', '.nojekyll']) {
+  for (const file of ['index.html', 'demo2/servicios/index.html', 'demo1/nosotros/index.html', '_astro/font.woff', '_astro/image.webp', '.nojekyll']) {
     assert.equal(allowedFile(file), true, file);
   }
   assert.deepEqual(buildEnvironment({ PATH: 'local', PUBLIC_LAUNCH_READY: 'true', SITE_URL: 'https://production.com', PUBLIC_SECRET: 'secret' }),
     { PATH: 'local', NODE_ENV: 'production', PUBLIC_LAUNCH_READY: 'false', SITE_URL: '' });
 });
 
-test('package resolves all seven routes, fragments, srcsets, fonts and local scripts', async t => {
+test('package resolves all eight routes, fragments, srcsets, fonts and local scripts', async t => {
   const directory = await fixture(t);
   await writeFile(path.join(directory, 'index.html'), '<meta name="robots" content="noindex, nofollow"><div id="inicio"></div>'
-    + '<a href="/demo3/#inicio">Demo</a><a href="#inicio">Home</a><img src="/_astro/image.webp" srcset="/_astro/image.webp 1x, /_astro/image.webp 2x">'
+    + '<a href="/demo3/#inicio">Demo</a><a href="/demo1/nosotros/#inicio">Nosotros</a><a href="#inicio">Home</a><img src="/_astro/image.webp" srcset="/_astro/image.webp 1x, /_astro/image.webp 2x">'
     + '<link href="/_astro/style.css"><script src="/_astro/local.js"></script>');
   const report = await packagePayload(directory);
-  assert.equal(report.files.filter(file => file.endsWith('.html')).length, 7);
+  assert.equal(report.files.filter(file => file.endsWith('.html')).length, 8);
+  assert.ok(routes.includes('demo1/nosotros/index.html'));
+  assert.match(await readFile(path.join(directory, 'index.html'), 'utf8'), /href="\/auditores-preview\/demo1\/nosotros\/#inicio"/);
   assert.ok(report.bytes > 0);
   assert.match(await readFile(path.join(directory, '_astro/style.css'), 'utf8'), /auditores-preview/);
   assert.equal(await readFile(path.join(directory, 'robots.txt'), 'utf8'), 'User-agent: *\nAllow: /\n');

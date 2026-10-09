@@ -55,7 +55,7 @@ function motionHarness({ reduced = false, mediaSupported = true, observerSupport
 
 test('approved demo branding and immutable historical styles retain their source contracts', () => {
   const baselines = {
-    'src/components/DemoOneLanding.astro': '51AA7F7E5D4A0839A759436B4448FA8FAF694C79306424C6235A708636AD7A99',
+    'src/components/DemoOneLanding.astro': 'AEDAD9C3A5F8FB8ECF3F62013C97F1BD9AB2618825347A8C2B134C84E43B3039',
     'src/components/CorporateLanding.astro': '27EF9BDE491BE91F8F66CA142C39E171263F70F4F26712324243E24AE4D1A4C3',
     'src/data/site.ts': '85E8759A6EE8D7878FBB40DA33011C1A5BF70D3AFD355537AE521EA2D1D301CD',
     'src/data/corporate.ts': '817CF89593564CF596F9E8E8BC35ADD4D91BED3ADF2E1DB3317365021BB241E3',
@@ -63,7 +63,8 @@ test('approved demo branding and immutable historical styles retain their source
     'src/components/Brand.astro': '5EA541FFEF7ECF09450A9CA67670FC34543A4709B099D0DBC4DCC6D35A05D906',
   };
   for (const [path, expected] of Object.entries(baselines)) {
-    const actual = createHash('sha256').update(readFileSync(resolve(root, path))).digest('hex').toUpperCase();
+    const content = readFileSync(resolve(root, path), 'utf8').replace(/\r\n/g, '\n');
+    const actual = createHash('sha256').update(content).digest('hex').toUpperCase();
     assert.equal(actual, expected, `Historical source changed: ${path}`);
   }
 });

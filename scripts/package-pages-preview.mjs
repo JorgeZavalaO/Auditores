@@ -8,7 +8,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 export const prefix = '/auditores-preview/';
 export const routes = ['index.html', ...[1, 2, 3].flatMap(n => [
   `demo${n}/index.html`, `demo${n}/servicios/index.html`,
-])];
+]), 'demo1/nosotros/index.html'];
 const root = fileURLToPath(new URL('../', import.meta.url));
 export const output = path.join(root, '.astro', 'pages-preview');
 const origin = 'https://jorgezavalao.github.io';

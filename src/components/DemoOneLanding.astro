@@ -21,7 +21,7 @@ const metadata = demo ? {
 } : {};
 ---
 <BaseLayout demo={demo} {...metadata}>
-  <Header branded={demo} servicesHref={demo ? '/demo1/servicios/' : '#servicios'} />
+  <Header branded={demo} servicesHref={demo ? '/demo1/servicios/' : '#servicios'} aboutHref={demo ? '/demo1/nosotros/' : '#nosotros'} />
   <main id="contenido">
     <section id="inicio" class="hero">
       <div class="hero-grid container">
@@ -57,6 +57,7 @@ const metadata = demo ? {
           <p>Somos una firma peruana orientada a MYPES. Nuestros socios cuentan con 20 años de experiencia en los sectores comercial, industrial y construcción.</p>
           <div class="about-values"><div><Icon name="check" /><span><strong>Anticiparnos, no solo corregir</strong>Identificamos riesgos y proponemos acciones preventivas.</span></div><div><Icon name="check" /><span><strong>Explicar con claridad</strong>Información útil y comprensible para decidir con criterio.</span></div></div>
           <a href="#metodologia" class="text-link">Conoce nuestra forma de trabajar <Icon /></a>
+          {demo && <div data-about-link><a href="/demo1/nosotros/" class="text-link">Conoce nuestra firma <Icon /></a></div>}
         </div>
       </div>
     </section>
@@ -88,5 +89,5 @@ const metadata = demo ? {
     </section>
     <Contact />
   </main>
-  <Footer branded={demo} />
+  <Footer branded={demo} aboutHref={demo ? '/demo1/nosotros/' : '#nosotros'} />
 </BaseLayout>

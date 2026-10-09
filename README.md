@@ -43,7 +43,7 @@ Demo3 also presents the complete Word-based portfolio in a complementary `#servi
 
 Open `/demo1/servicios/`, `/demo2/servicios/` or `/demo3/servicios/` from that demo's Services navigation. Each contains the seven Word-based categories, detailed scope/value summaries, an index and a prominent free diagnostic. `serviceCatalog.ts` owns the shared content; `ServiceCatalog.astro` renders the details and `ServicesPage.astro` provides three scoped visual compositions: blue/white cards, corporate numbered information and an ivory editorial layout with a side index.
 
-These informational pages use no new forms or animation. Contact actions return to their own demo's existing `#contacto` form, which remains local-only. Brand, breadcrumb and firm links also stay within the corresponding demo. Existing home sections and forms are preserved; the root does not link to the comparison subpages. Tests resolve every generated local link and fragment, check all six demo routes in preview/production and keep the production sitemap root-only. Choosing any of these service pages for publication requires a separate final information-architecture and SEO decision, not merely enabling the launch flag.
+These informational pages use no new forms or animation. Contact actions return to their own demo's existing `#contacto` form, which remains local-only. Brand, breadcrumb and firm links also stay within the corresponding demo. Existing home sections and forms are preserved; the root does not link to the comparison subpages. Tests resolve every generated local link and fragment, check all demo routes in preview/production and keep the production sitemap root-only. Choosing any of these service pages for publication requires a separate final information-architecture and SEO decision, not merely enabling the launch flag.
 
 ```sh
 npm run check
@@ -53,6 +53,14 @@ npm run preview
 ```
 
 `npm test` uses the Node built-in runner. It builds isolated preview and production fixtures under `.astro/test-builds/`, checks semantic HTML, working anchor targets, the ten client marks, image and font locality, demo safeguards, and production/preview SEO output. Fixture domains are never accessed or deployed. TDD was explicitly disabled for this implementation; ordinary functional checks remain required.
+
+## Institutional page for demo1
+
+`/demo1/nosotros/` is the selected demo's institutional page, with a Peruvian MYPES audience and the existing blue/white visual language. `aboutCompany.ts` owns the adapted content, `AboutCompanyPage.astro` the composition, and the route is a thin wrapper. The supplied Word's **Quiénes Somos**, **Nuestra Misión**, **Nuestra Visión** and **Nuestros Valores** sections support the narrative, official mission/vision and all eight values. Only the partners' 20 years of commercial, industrial and construction experience are stated; the incomplete introduction does not establish a founding date or company age. Vision is presented as an aspiration, not an achieved market position. Photographs are explicitly illustrative, not actual team portraits.
+
+Demo1's header, footer, home summary and services navigation lead to this page. Existing home content and `#nosotros` remain. Optional Header/Footer props retain the historical root defaults; the institutional page sends method, FAQ and contact links back to full `/demo1/#...` destinations. No additional form or competing service catalog is introduced. Its unique institutional metadata is permanently noindex, with no canonical/schema; launch-ready sitemap still contains only `/`.
+
+The local manual-preview packager now validates eight routes, including the institutional page, and rewrites its links/assets under the existing preview subpath. This tooling update does not authorize publishing or transferring the generated payload. Tests read the original Word's OOXML without modifying it, verify the source facts, preserve prior rendered routes except the approved demo1 navigation/CTA, and protect the separately pending carousel source/test bytes. About-change snapshots under `.astro/demo1-about-*.json` distinguish this unit from the older uncommitted carousel delta; current full-worktree checks are not proof of an isolated staged commit.
 
 ## Editable content and reusable components
 

@@ -24,7 +24,7 @@ const content = {
       <div class="sp-container sp-header-inner">
         <JJBrand href={home} />
         <nav aria-label="Navegación principal">
-          <a href={home}>Inicio</a><a href="#catalogo" aria-current="page">Servicios</a><a href={`${home}${content.firm}`}>La firma</a><a href={`${home}#contacto`} class="sp-contact-link">Conversemos <Icon /></a>
+          <a href={home}>Inicio</a><a href="#catalogo" aria-current="page">Servicios</a><a href={variant === 1 ? `${home}nosotros/` : `${home}${content.firm}`}>La firma</a><a href={`${home}#contacto`} class="sp-contact-link">Conversemos <Icon /></a>
         </nav>
       </div>
     </header>

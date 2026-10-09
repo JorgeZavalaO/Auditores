@@ -69,6 +69,14 @@ function normalizeVisibleBody(html) {
   return body.replace(/<script\b[\s\S]*?<\/script>/g, '').replace(/\sdata-astro-cid-[a-z0-9]+(?:="[^"]*")?/gi, '');
 }
 
+function normalizeAboutIntegration(html, route) {
+  if (route === 'demo1') return html
+    .replace(/<div data-about-link>[\s\S]*?<\/div>/g, '')
+    .replace(/href="\/demo1\/nosotros\/"/g, 'href="#nosotros"');
+  if (route === 'demo1/servicios') return html.replace('href="/demo1/nosotros/"', 'href="/demo1/#nosotros"');
+  return html;
+}
+
 function normalizeVisibleMain(html) {
   const main = html.match(/<main\b[^>]*>([\s\S]*?)<\/main>/)?.[1];
   assert.ok(main);
@@ -76,7 +84,7 @@ function normalizeVisibleMain(html) {
 }
 
 function normalizeDemoOneClients(html) {
-  return html.replace(/<section class="clients-section" aria-labelledby="clients-title">([\s\S]*?)<\/section>/, (_, section) => {
+  return normalizeAboutIntegration(html, 'demo1').replace(/<section class="clients-section" aria-labelledby="clients-title">([\s\S]*?)<\/section>/, (_, section) => {
     const heading = section.match(/<div class="clients-heading">[\s\S]*?<\/div>/)?.[0];
     assert.ok(heading, 'Client-section heading must be preserved');
     return `<section class="clients-section" aria-labelledby="clients-title">${heading}</section>`;
@@ -95,7 +103,7 @@ function normalizeHistoricalHome(html, route) {
 }
 
 function assertLocalDestinations(output) {
-  const pages = ['/', '/demo1/', '/demo2/', '/demo3/', '/demo1/servicios/', '/demo2/servicios/', '/demo3/servicios/'];
+  const pages = ['/', '/demo1/', '/demo2/', '/demo3/', '/demo1/servicios/', '/demo2/servicios/', '/demo3/servicios/', '/demo1/nosotros/'];
   for (const page of pages) {
     const html = readFileSync(join(output, page, 'index.html'), 'utf8');
     for (const [, href] of html.matchAll(/href="([^"]+)"/g)) {
@@ -172,7 +180,7 @@ function assertCarouselAndPreservation(output, compareMetadata = true) {
     const current = readFileSync(join(output, route === 'root' ? 'index.html' : `${route}/index.html`), 'utf8');
     if (route !== 'demo1') assert.doesNotMatch(current, /data-client-carousel|client-logo-track/);
     if (previous) {
-      const normalize = (html) => route === 'demo1' ? normalizeDemoOneClients(normalizeVisibleBody(html)) : normalizeVisibleBody(html);
+      const normalize = (html) => route === 'demo1' ? normalizeDemoOneClients(normalizeVisibleBody(html)) : normalizeAboutIntegration(normalizeVisibleBody(html), route);
       assert.equal(normalize(current), normalize(previous[route]), `Carousel changed content outside demo1 client row: ${route}`);
       if (compareMetadata) {
         const normalizeHead = (html) => html.match(/<head>([\s\S]*?)<\/head>/)[1]
@@ -182,6 +190,36 @@ function assertCarouselAndPreservation(output, compareMetadata = true) {
       }
     }
   }
+}
+
+function assertAboutPage(output) {
+  const html = readFileSync(join(output, 'demo1/nosotros/index.html'), 'utf8');
+  assertSemanticDemo(html, output, false);
+  assertNotIndexable(html);
+  assertConfirmedBrand(html);
+  assert.match(html, /<title>Nosotros \| J&amp;J CONSULTORES Y AUDITORES<\/title>/);
+  assert.match(html, /href="\/demo1\/nosotros\/" aria-current="page"/);
+  assert.match(html, /Nuestra misión/);
+  assert.match(html, /Nuestra visión/);
+  assert.match(html, /Nuestros socios cuentan con 20 años de experiencia/);
+  assert.match(html, /Fotografía ilustrativa · No representa al equipo de la firma/);
+  for (const value of ['Integridad', 'Excelencia', 'Compromiso', 'Prevención', 'Confidencialidad', 'Cercanía', 'Innovación', 'Orientación a resultados']) {
+    assert.ok(html.includes(`>${value}</h3>`), `Missing official value: ${value}`);
+  }
+  for (const href of ['/demo1/', '/demo1/servicios/', '/demo1/#contacto', '/demo1/#metodologia', '/demo1/#preguntas']) {
+    assert.ok(html.includes(`href="${href}"`), `Missing institutional destination: ${href}`);
+  }
+  assert.doesNotMatch(html, /desde 20\d\d|fundad[ao] en|Big ?Four|ISO 9001|equipo certificado|clientes satisfechos/i);
+  const snapshot = join(root, '.astro/demo1-about-render-baseline.json');
+  if (existsSync(snapshot)) {
+    for (const [route, previous] of Object.entries(JSON.parse(readFileSync(snapshot, 'utf8')))) {
+      const current = readFileSync(join(output, route === 'root' ? 'index.html' : `${route}/index.html`), 'utf8');
+      const normalize = (html) => normalizeAboutIntegration(normalizeVisibleBody(html), route);
+      assert.equal(normalize(current), normalize(previous), `About page changed content outside authorized navigation/CTA: ${route}`);
+    }
+  }
+  const home = readFileSync(join(output, 'demo1/index.html'), 'utf8');
+  assert.equal((home.match(/href="\/demo1\/nosotros\/"/g) || []).length, 3, 'Demo1 header, summary and footer must link to Nosotros');
 }
 
 function assertConfirmedBrand(html) {
@@ -394,6 +432,7 @@ test('generated preview contains semantic content, local assets and safe demo in
   }
   assertServicePages(output);
   assertCarouselAndPreservation(output);
+  assertAboutPage(output);
 });
 
 test('configured production emits matching canonical, social metadata, schema and sitemap', () => {
@@ -431,4 +470,5 @@ test('configured production emits matching canonical, social metadata, schema an
   assertServicePages(output);
   // Preview snapshots have no production SEO; body-only preservation remains identical.
   assertCarouselAndPreservation(output, false);
+  assertAboutPage(output);
 });
