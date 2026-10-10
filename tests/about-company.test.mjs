@@ -104,4 +104,12 @@ test('CEO profile uses the confirmed portrait and supplied professional facts', 
   assert.match(page, /\.ac-ceo-photo > img \{[^}]*height: 460px;[^}]*object-position: center top;/s);
   assert.match(page, /\.ac-ceo-photo > img \{ height: 280px; \}/);
   assert.doesNotMatch(page, /\.ac-team-(?:card|grid|disclosure)/);
+  assert.match(page, /\.ac-accompaniment \{ background: #fff; padding-block: 70px; \}/);
+  assert.match(page, /\.ac-next \{ background: #f4f6fb; padding-block: 75px; \}/);
+  assert.match(page, /figcaption \{ font-size: 12px;/);
+  assert.match(page, /\.ac-experience-note \{ display: block; font-size: 12px;/);
+  assert.match(page, /\.ac-aspiration \{ display: block; color: #dbe2ff; font-size: 12px;/);
+  assert.match(page, /\.ac-next span:not\(\.ac-eyebrow\) \{ display: block; color: #5d657d; font-size: 12px;/);
+  assert.match(page, /\.ac-values \{ padding-block: 40px; \}/);
+  assert.match(page, /\.ac-values-grid \{ grid-template-columns: 1fr; gap: 16px; \}/);
 });
