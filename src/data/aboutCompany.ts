@@ -14,11 +14,17 @@ export const aboutCompany = {
   ],
   mission: 'Brindar servicios integrales de contabilidad, asesoría tributaria, outsourcing contable, gestión financiera y cumplimiento empresarial para MYPES peruanas. Trabajamos con información precisa, tecnología, prevención y acompañamiento cercano para prevenir contingencias, optimizar recursos y generar confianza. Nuestro compromiso es convertir la gestión contable en una herramienta para el crecimiento y la rentabilidad de cada negocio.',
   vision: 'Ser el estudio contable referente para las MYPES del Perú, reconocido por brindar confianza, innovación y atención personalizada. Aspiramos a impulsar el crecimiento sostenible de nuestros clientes mediante soluciones contables, tributarias y financieras estratégicas, que les permitan tomar mejores decisiones, reducir riesgos y competir con éxito.',
-  teamPreview: [
-    { label: 'Colaborador 01', note: 'Nombre y especialidad por confirmar.', imageAlt: 'Retrato de perfil demostrativo; fotografía repetida temporalmente.', isDemonstrative: true },
-    { label: 'Colaborador 02', note: 'Nombre y especialidad por confirmar.', imageAlt: 'Retrato de perfil demostrativo; fotografía repetida temporalmente.', isDemonstrative: true },
-    { label: 'Colaborador 03', note: 'Nombre y especialidad por confirmar.', imageAlt: 'Retrato de perfil demostrativo; fotografía repetida temporalmente.', isDemonstrative: true },
-  ],
+  ceo: {
+    name: 'Jorge Luis Zavala Félix',
+    designation: 'CEO',
+    credentials: ['Contador Público Colegiado', 'Auditor Independiente'],
+    imageAlt: 'Jorge Luis Zavala Félix, CEO de J&J Consultores y Auditores',
+    biography: [
+      'Profesional con más de 20 años de trayectoria en gestión contable, financiera y asesoría tributaria para los sectores comercial, industrial, construcción y servicios.',
+      'Auditor independiente con más de 5 años de experiencia en auditoría financiera, tributaria y de control interno.',
+      'Especialista en liderazgo de equipos contables, gestión estratégica y optimización de procesos empresariales. Su enfoque integra excelencia técnica, ética profesional y visión de negocio para fortalecer la gestión y el crecimiento de las organizaciones.',
+    ],
+  },
   values: [
     { title: 'Integridad', description: 'Actuamos con honestidad, transparencia, responsabilidad y ética profesional. Cuidamos la confianza que cada cliente deposita en nosotros.', icon: 'shield' },
     { title: 'Excelencia', description: 'Buscamos hacer bien las cosas y mejorar continuamente nuestros conocimientos, procesos y herramientas, tanto técnicos como tecnológicos.', icon: 'check' },

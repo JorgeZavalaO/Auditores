@@ -32,10 +32,9 @@ const home = '/demo1/';
     <section id="valores" class="ac-values ac-container" aria-labelledby="values-title">
       <div class="ac-values-intro"><div><span class="ac-eyebrow">NUESTROS VALORES</span><h2 id="values-title">La confianza también<br />se construye en los detalles.</h2></div><p>Ocho principios que orientan nuestra relación con cada cliente y la forma en que asumimos cada encargo.</p></div><div class="ac-values-grid">{aboutCompany.values.map((value, index) => <article><div class="ac-value-top"><span>0{index + 1}</span><Icon name={value.icon} /></div><h3>{value.title}</h3><p>{value.description}</p></article>)}</div>
     </section>
-    <section id="equipo" class="ac-team ac-container" aria-labelledby="team-title">
-      <div class="ac-team-heading"><div><span class="ac-eyebrow">NUESTRO EQUIPO</span><h2 id="team-title">Un equipo comprometido con tu empresa</h2></div><p>La atención directa, la confidencialidad y una información clara orientan la relación que buscamos construir con cada empresa.</p></div>
-      <div class="ac-team-grid">{aboutCompany.teamPreview.map((profile) => <article class="ac-team-card"><Image src={teamPortrait} alt={profile.imageAlt} widths={[360, 600]} sizes="(max-width: 700px) calc(100vw - 40px), 31vw" format="webp" loading="lazy" /><div><span>{profile.label}</span><p>{profile.note}</p></div></article>)}</div>
-      <p class="ac-team-disclosure">La fotografía se repite solo para esta demo; reemplazar con los perfiles confirmados antes de publicación.</p>
+    <section id="equipo" class="ac-ceo ac-container" aria-labelledby="ceo-name">
+      <figure class="ac-ceo-photo"><Image src={teamPortrait} alt={aboutCompany.ceo.imageAlt} widths={[400, 640, 900]} sizes="(max-width: 700px) calc(100vw - 40px), 400px" format="webp" loading="lazy" /></figure>
+      <div class="ac-ceo-bio"><span class="ac-eyebrow">LIDERAZGO</span><h2 id="ceo-name">{aboutCompany.ceo.name}</h2><p class="ac-ceo-designation">{aboutCompany.ceo.designation}</p><ul class="ac-ceo-credentials">{aboutCompany.ceo.credentials.map((credential) => <li>{credential}</li>)}</ul><div class="ac-ceo-copy">{aboutCompany.ceo.biography.map((paragraph) => <p>{paragraph}</p>)}</div></div>
     </section>
     <section class="ac-accompaniment"><div class="ac-container ac-accompaniment-grid"><figure><Image src={advisory} alt="Revisión de información contable y documentación en una mesa, fotografía ilustrativa" widths={[500, 800, 1100]} sizes="(max-width: 900px) 90vw, 43vw" format="webp" loading="lazy" /><figcaption>Fotografía ilustrativa</figcaption></figure><div><span class="ac-eyebrow">CERCA DE TU EMPRESA</span><h2>Información que puedas entender.<br />Una relación en la que puedas confiar.</h2><p>Escuchar los objetivos de tu negocio, explicar lo relevante y proponer acciones preventivas forma parte de nuestro compromiso.</p><p>La tecnología nos ayuda a organizar mejor los procesos. El trato directo permite que esa información tenga sentido para quienes toman las decisiones.</p><a class="ac-text-link" href="/demo1/servicios/">Explora cómo podemos acompañarte <Icon /></a></div></div></section>
     <section class="ac-next" aria-labelledby="next-title"><div class="ac-container"><div><span class="ac-eyebrow">COMENCEMOS CON UNA CONVERSACIÓN</span><h2 id="next-title">Conozcamos el momento<br />de tu empresa.</h2><p>Cuéntanos qué necesitas. Podemos empezar por un diagnóstico contable y tributario gratuito.</p><span>Datos de contacto de ejemplo. El formulario de la demo no envía ni guarda información.</span></div><div class="ac-next-actions"><a class="button" href={`${home}#contacto`}>Solicitar diagnóstico gratuito <Icon /></a><a href="/demo1/servicios/">Ver nuestros servicios <Icon /></a></div></div></section>
@@ -99,17 +98,15 @@ const home = '/demo1/';
   .ac-value-top svg { color: #0a1267; width: 22px; height: 22px; }
   .ac-values-grid h3 { color: #0a1267; font-size: 17px; line-height: 1.4; margin: 20px 0 13px; }
   .ac-values-grid p { font-size: 14px; line-height: 1.85; }
-  .ac-team { padding-block: 72px; scroll-margin-top: 100px; }
-  .ac-team-heading { display: grid; grid-template-columns: 1.3fr 1fr; gap: 72px; align-items: end; margin-bottom: 32px; }
-  .ac-team-heading h2 { margin-top: 20px; }
-  .ac-team-heading > p { font-size: 14px; line-height: 1.95; }
-  .ac-team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-  .ac-team-card { border: 1px solid #dce1ec; background: #f4f6fb; }
-  .ac-team-card > img { display: block; width: 100%; height: 300px; object-fit: cover; object-position: center top; }
-  .ac-team-card > div { padding: 18px 20px; }
-  .ac-team-card span { color: #0a1267; font-size: 14px; font-weight: 800; }
-  .ac-team-card p { color: #5d657d; font-size: 14px; line-height: 1.7; margin-top: 8px; }
-  .ac-team-disclosure { color: #5d657d; font-size: 14px; line-height: 1.7; margin-top: 16px; }
+  .ac-ceo { display: grid; grid-template-columns: minmax(360px, 400px) minmax(0, 1fr); align-items: center; gap: 72px; padding-block: 72px; scroll-margin-top: 100px; }
+  .ac-ceo-photo { margin: 0; background: #f4f6fb; border-bottom: 3px solid #0a1267; }
+  .ac-ceo-photo > img { display: block; width: 100%; height: 460px; object-fit: cover; object-position: center top; }
+  .ac-ceo-bio { border-top: 1px solid #dce1ec; padding-top: 24px; }
+  .ac-ceo-bio h2 { margin: 16px 0 6px; }
+  .ac-ceo-designation { color: #0a1267; font-size: 15px; font-weight: 800; letter-spacing: .08em; }
+  .ac-ceo-credentials { display: flex; flex-wrap: wrap; gap: 9px 18px; list-style: none; margin: 20px 0 24px; padding: 15px 0; border-block: 1px solid #dce1ec; }
+  .ac-ceo-credentials li { color: #5d657d; font-size: 14px; font-weight: 700; }
+  .ac-ceo-copy p { font-size: 14px; line-height: 1.9; margin-top: 14px; }
   .ac-accompaniment { background: #f4f6fb; padding-block: 70px; }
   .ac-accompaniment-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 85px; align-items: center; }
   .ac-accompaniment figure { margin: 0; }
@@ -130,18 +127,17 @@ const home = '/demo1/';
   @media (max-width: 1000px) {
     .ac-hero-grid, .ac-story { gap: 45px; }
     .ac-values-grid { grid-template-columns: repeat(2, 1fr); gap: 35px; }
-    .ac-values-intro, .ac-team-heading, .ac-accompaniment-grid { gap: 45px; }
-    .ac-team-grid { gap: 20px; }
+    .ac-values-intro, .ac-accompaniment-grid { gap: 45px; }
+    .ac-ceo { gap: 45px; }
     .ac-hero-copy .button { padding-inline: 17px; }
     .ac-next > div { display: block; }
     .ac-next-actions { display: inline-block; margin-top: 30px; }
   }
   @media (max-width: 700px) {
     .ac-container { width: calc(100% - 40px); }
-    .ac-hero-grid, .ac-story, .ac-purpose-grid, .ac-values-intro, .ac-team-heading, .ac-accompaniment-grid { grid-template-columns: 1fr; gap: 35px; }
-    .ac-team { padding-block: 48px; }
-    .ac-team-grid { grid-template-columns: 1fr; gap: 20px; }
-    .ac-team-card > img { height: 260px; }
+    .ac-hero-grid, .ac-story, .ac-purpose-grid, .ac-values-intro, .ac-accompaniment-grid { grid-template-columns: 1fr; gap: 35px; }
+    .ac-ceo { grid-template-columns: 1fr; gap: 28px; padding-block: 48px; }
+    .ac-ceo-photo > img { height: 280px; }
     .ac-hero-visual { margin-top: 15px; }
     .ac-hero-visual > img { height: 350px; }
     .ac-photo-note { left: 0; padding: 18px 22px; }
