@@ -57,3 +57,13 @@ const navigationHref = (href: string) => href === '#servicios' ? servicesHref : 
     window.matchMedia('(min-width: 901px)').addEventListener('change', close);
   }
 </script>
+<style>
+  .site-header :global(.jj-monogram) { font-size: 59px; }
+  .site-header :global(.jj-monogram span) { font-size: 34px; }
+  .site-header :global(.jj-wordmark) { font-size: 10px; }
+  @media (max-width: 650px) {
+    .site-header :global(.jj-monogram) { font-size: 46px; }
+    .site-header :global(.jj-monogram span) { font-size: 26px; }
+    .site-header :global(.jj-wordmark) { font-size: 8px; }
+  }
+</style>
