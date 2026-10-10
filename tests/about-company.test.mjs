@@ -89,9 +89,13 @@ test('CEO profile uses the confirmed portrait and supplied professional facts', 
   assert.ok(existsSync(new URL('src/assets/photos/collaborators/jorge-zavala-felix-cpc-auditor.png', root)));
   assert.equal('teamPreview' in aboutCompany, false);
   const page = readFileSync(new URL('src/components/AboutCompanyPage.astro', root), 'utf8');
-  assert.match(page, /id="equipo"/);
-  assert.match(page, /aboutCompany\.ceo\.name/);
+  assert.match(page, /<section id="equipo" class="ac-ceo ac-container" aria-labelledby="ceo-section-title">/);
+  assert.match(page, /<span class="ac-eyebrow">NUESTRO CEO<\/span>/);
+  assert.match(page, /<h2 id="ceo-section-title">Experiencia que guía nuestra firma<\/h2>/);
+  assert.match(page, /<p class="ac-ceo-intro">Conoce a Jorge Luis Zavala Félix, quien lidera J&J CONSULTORES Y AUDITORES\.<\/p>/);
+  assert.match(page, /<h3>\{aboutCompany\.ceo\.name\}<\/h3>/);
   assert.match(page, /aboutCompany\.ceo\.credentials\.map/);
+  assert.doesNotMatch(page, /LIDERAZGO|<h2 id="ceo-name">/);
   assert.doesNotMatch(page, /teamPreview|fotografía se repite solo para esta demo|Nombre y especialidad por confirmar/);
   assert.match(page, /\.ac-ceo-photo > img \{[^}]*height: 460px;[^}]*object-position: center top;/s);
   assert.match(page, /\.ac-ceo-photo > img \{ height: 280px; \}/);
