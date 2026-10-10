@@ -79,3 +79,24 @@ test('the pending carousel source, behavior test and documentation remain intact
     assert.ok(paragraph && readme.includes(paragraph), 'Pending carousel documentation must remain exact');
   }
 });
+
+test('team preview is compact, client-facing and explicitly demonstrative', () => {
+  assert.deepEqual(Array.from(aboutCompany.teamPreview, (profile) => profile.label), ['Colaborador 01', 'Colaborador 02', 'Colaborador 03']);
+  assert.ok(aboutCompany.teamPreview.every((profile) => profile.note === 'Nombre y especialidad por confirmar.'));
+  assert.ok(aboutCompany.teamPreview.every((profile) => profile.isDemonstrative));
+  assert.ok(aboutCompany.teamPreview.every((profile) => profile.imageAlt.includes('repetida temporalmente')));
+  assert.ok(existsSync(new URL('src/assets/photos/collaborators/jorge-zavala-felix-cpc-auditor.png', root)));
+  const page = readFileSync(new URL('src/components/AboutCompanyPage.astro', root), 'utf8');
+  assert.match(page, /<h2 id="team-title">Un equipo comprometido con tu empresa<\/h2>/);
+  assert.match(page, /atención directa.*confidencialidad.*información clara/is);
+  assert.match(page, /fotografía se repite solo para esta demo/i);
+  const teamImageRules = page.match(/\.ac-team-card > img \{[^}]*\}/g) ?? [];
+  assert.equal(teamImageRules.length, 2, 'Team portrait height must have one desktop and one mobile rule only');
+  assert.match(teamImageRules[0], /height: 300px;.*object-position: center top;/s);
+  assert.match(teamImageRules[1], /height: 260px;/);
+  assert.doesNotMatch(page, /\.ac-team-card > img \{[^}]*aspect-ratio:/s);
+  assert.doesNotMatch(page, /\.ac-team-card p \{ color: #5d657d; font-size: 12px;/);
+  assert.doesNotMatch(page, /\.ac-team-disclosure \{ color: #5d657d; font-size: 10px;/);
+  assert.match(page, /\.ac-team-card p \{ color: #5d657d; font-size: 14px;/);
+  assert.match(page, /\.ac-team-disclosure \{ color: #5d657d; font-size: 14px;/);
+});
