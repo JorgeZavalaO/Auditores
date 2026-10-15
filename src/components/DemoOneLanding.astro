@@ -11,6 +11,7 @@ import ClientLogoCarousel from './ClientLogoCarousel.astro';
 import { clients, featuredServices, supportingServices, process, faqs } from '../data/site';
 import team from '../assets/photos/team.jpg';
 import advisory from '../assets/photos/advisory.jpg';
+import demoOneHero from '../../img/Reunion-con-JZFv6.png';
 interface Props { demo?: boolean; }
 const { demo = false } = Astro.props;
 const metadata = demo ? {
@@ -34,7 +35,7 @@ const metadata = demo ? {
         </div>
         <div class="hero-visual">
           <div class="hero-blue-shape" aria-hidden="true"></div>
-          <div class="hero-photo"><Image src={team} alt="Profesionales colaborando en una reunión de trabajo, fotografía ilustrativa" widths={[640, 1000, 1400]} sizes="(max-width: 900px) 92vw, 48vw" format="webp" loading="eager" fetchpriority="high" /></div>
+          <div class:list={['hero-photo', demo && 'demo1-hero-photo']}><Image src={demo ? demoOneHero : team} alt={demo ? 'Equipo profesional reunido en una oficina durante una sesión de trabajo, fotografía ilustrativa' : 'Profesionales colaborando en una reunión de trabajo, fotografía ilustrativa'} widths={[640, 1000, 1400]} sizes="(max-width: 900px) 92vw, 48vw" format="webp" loading="eager" fetchpriority="high" /></div>
           <div class="experience-badge"><strong>20<span>+</span></strong><span>Años de experiencia<br />de nuestros socios</span><div class="badge-line" aria-hidden="true"></div></div>
           <div class="hero-caption"><span class="caption-dot"></span>Un equipo. Una visión más clara.</div>
           <span class="dot-pattern hero-dots" aria-hidden="true"></span>

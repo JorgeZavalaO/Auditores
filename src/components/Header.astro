@@ -3,6 +3,7 @@ import Brand from './Brand.astro';
 import JJBrand from './JJBrand.astro';
 import Icon from './Icon.astro';
 import { company, navigation } from '../data/site';
+import { demo1ContactEmail, demo1ContactPhone } from '../data/demo1';
 interface Props {
   branded?: boolean;
   servicesHref?: string;
@@ -12,12 +13,14 @@ interface Props {
   aboutCurrent?: boolean;
 }
 const { branded = false, servicesHref = '#servicios', aboutHref = '#nosotros', homeHref = '#inicio', anchorBase = '', aboutCurrent = false } = Astro.props;
+const contactEmail = branded ? demo1ContactEmail : company.email;
+const contactPhone = branded ? demo1ContactPhone : company.phone;
 const navigationHref = (href: string) => href === '#servicios' ? servicesHref : href === '#nosotros' ? aboutHref : `${anchorBase}${href}`;
 ---
 <div class="utility-bar">
   <div class="container utility-inner">
     <span>Una mirada clara para tu empresa.</span>
-    <div class="utility-contacts"><span class="example-tag">Datos de ejemplo</span><span><Icon name="phone" />{company.phone}</span><span><Icon name="mail" />{company.email}</span></div>
+    <div class="utility-contacts"><span class="example-tag">{branded ? 'Teléfono de contacto' : 'Datos de ejemplo'}</span>{branded ? <a class="utility-phone" href={`tel:${contactPhone.replace(/\s/g, '')}`}><Icon name="phone" />{contactPhone}</a> : <span><Icon name="phone" />{contactPhone}</span>}{branded ? <a href={`mailto:${contactEmail}`}><Icon name="mail" />{contactEmail}</a> : <span><Icon name="mail" />{contactEmail}</span>}</div>
   </div>
 </div>
 <header class="site-header">
@@ -58,6 +61,8 @@ const navigationHref = (href: string) => href === '#servicios' ? servicesHref : 
   }
 </script>
 <style>
+  .utility-contacts a { display: flex; align-items: center; gap: 7px; color: inherit; text-decoration: none; }
+  .utility-contacts a:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
   .site-header :global(.jj-monogram) { font-size: 59px; }
   .site-header :global(.jj-monogram span) { font-size: 34px; }
   .site-header :global(.jj-wordmark) { font-size: 10px; }

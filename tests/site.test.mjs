@@ -7,6 +7,8 @@ import { resolveSite } from '../config/site.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const cli = join(root, 'node_modules', 'astro', 'bin', 'astro.mjs');
+const demoOnePhone = '+51 956 481 871';
+const demoOnePhoneHref = 'tel:+51956481871';
 
 function build(name, environment) {
   const output = join(root, '.astro', 'test-builds', name);
@@ -20,7 +22,7 @@ function build(name, environment) {
   return { output, html: readFileSync(join(output, 'index.html'), 'utf8') };
 }
 
-function assertSemanticDemo(html, output, requireForm = true) {
+function assertSemanticDemo(html, output, requireForm = true, demoOneContact = false, demoOnePage = 'home') {
   assert.equal((html.match(/<h1\b/g) || []).length, 1);
   assert.match(html, /<html lang="es-PE">/);
   const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]);
@@ -42,9 +44,62 @@ function assertSemanticDemo(html, output, requireForm = true) {
     assert.match(html, /type="email"[^>]+required/);
     assert.match(html, /role="status" aria-live="polite"/);
   } else assert.doesNotMatch(html, /<form\b/);
-  assert.match(html, /Datos de ejemplo/);
-  assert.doesNotMatch(html, /href="(?:mailto:|tel:|https:\/\/wa\.me)/);
+  assert.match(html, demoOneContact ? /Teléfono de contacto/ : /Datos de ejemplo/);
+  if (demoOneContact) {
+    assert.match(html, /href="mailto:jzavala@jjconsultores\.pe"/);
+    assert.match(html, /jzavala@jjconsultores\.pe/);
+    assert.doesNotMatch(html, /contacto@example\.com/);
+    assertDemoOneEmailPlacement(html, demoOnePage);
+    assertDemoOnePhonePlacement(html, demoOnePage);
+    if (demoOnePage === 'home') {
+      assert.match(html, /alt="Equipo profesional reunido en una oficina durante una sesión de trabajo, fotografía ilustrativa"/);
+      assert.match(readFileSync(join(root, 'src/styles/global.css'), 'utf8'), /\.hero-photo\.demo1-hero-photo img \{ object-position: 58% center; \}/);
+    }
+  } else {
+    assert.match(html, /contacto@example\.com/);
+    assert.doesNotMatch(html, /jzavala@jjconsultores\.pe|\+51 956 481 871|href="(?:mailto:|tel:|https:\/\/wa\.me)/);
+  }
+  if (!demoOneContact) assert.doesNotMatch(html, /href="tel:/);
+  assert.doesNotMatch(html, /href="https:\/\/wa\.me/);
   assert.doesNotMatch(html, /localStorage|sessionStorage|fetch\(/);
+}
+
+function assertDemoOneEmailPlacement(html, page) {
+  const assertLinkIn = (container, endMarker, link) => {
+    const start = html.indexOf(container);
+    const end = html.indexOf(endMarker, start);
+    assert.ok(start >= 0 && end > start, `Missing contact region: ${container}`);
+    assert.match(html.slice(start, end), link);
+  };
+  const emailLink = /<a[^>]*href="mailto:jzavala@jjconsultores\.pe"[^>]*>/;
+  if (page === 'services') {
+    assertLinkIn('class="sp-container sp-example"', '</div>', /<a class="sp-email" href="mailto:jzavala@jjconsultores\.pe"[^>]*>/);
+    return;
+  }
+  assertLinkIn('class="utility-contacts"', '</div>', emailLink);
+  assertLinkIn('class="container footer-middle"', '<nav', /<a class="footer-email" href="mailto:jzavala@jjconsultores\.pe"[^>]*>/);
+  if (page === 'home') assertLinkIn('class="contact-details"', 'class="contact-example"', /<a class="contact-email" href="mailto:jzavala@jjconsultores\.pe"[^>]*>/);
+  if (page === 'about') assertLinkIn('class="ac-next-actions"', '</div>', emailLink);
+}
+
+function assertDemoOnePhonePlacement(html, page) {
+  const assertLinkIn = (container, endMarker, link = /href="tel:\+51956481871"/) => {
+    const start = html.indexOf(container);
+    const end = html.indexOf(endMarker, start);
+    assert.ok(start >= 0 && end > start, `Missing phone region: ${container}`);
+    assert.match(html.slice(start, end), link);
+  };
+  assert.ok(html.includes(demoOnePhoneHref));
+  assert.ok(html.includes(demoOnePhone));
+  assert.doesNotMatch(html, /Teléfono de ejemplo|\+51 999 999 999/);
+  if (page === 'services') {
+    assertLinkIn('class="sp-container sp-example"', '</div>', /<a class="sp-phone" href="tel:\+51956481871"/);
+    return;
+  }
+  assertLinkIn('class="utility-contacts"', '</div>', /<a class="utility-phone" href="tel:\+51956481871"/);
+  assertLinkIn('class="container footer-middle"', '<nav', /<a class="footer-phone" href="tel:\+51956481871"/);
+  if (page === 'home') assertLinkIn('class="contact-details"', 'class="contact-example"', /<a class="contact-phone" href="tel:\+51956481871"/);
+  if (page === 'about') assertLinkIn('class="ac-next-actions"', '</div>', /<a class="about-phone" href="tel:\+51956481871"/);
 }
 
 function assertNotIndexable(html) {
@@ -65,11 +120,38 @@ function normalizeVisibleBody(html) {
 }
 
 function normalizeAboutIntegration(html, route) {
-  if (route === 'demo1') return html
+  if (route === 'demo1') return normalizeDemoOneContact(html)
     .replace(/<div data-about-link>[\s\S]*?<\/div>/g, '')
     .replace(/href="\/demo1\/nosotros\/"/g, 'href="#nosotros"');
-  if (route === 'demo1/servicios') return html.replace('href="/demo1/nosotros/"', 'href="/demo1/#nosotros"');
+  if (route === 'demo1/servicios') return normalizeDemoOneContact(html).replace('href="/demo1/nosotros/"', 'href="/demo1/#nosotros"');
+  if (route === 'demo1/nosotros') return normalizeDemoOneContact(html);
   return html;
+}
+
+function normalizeDemoOneContact(html) {
+  return html
+    .replace(/<div class="hero-photo(?:\s[^"]*)?">[\s\S]*?<\/div>/, '<div class="hero-photo">[hero image]</div>')
+    .replace(/<a class="utility-phone" href="tel:\+51956481871">([\s\S]*?)<\/a>/g, '<span>$1</span>')
+    .replace(/<a class="footer-phone" href="tel:\+51956481871">[\s\S]*?<\/a>/g, '')
+    .replace(/<a class="contact-phone" href="tel:\+51956481871"><strong>[\s\S]*?<\/strong><\/a>/g, '<strong>+51 999 999 999</strong>')
+    .replace(/<span>Teléfono de contacto<\/span><a class="sp-phone" href="tel:\+51956481871">[\s\S]*?<\/a>/g, '<span>Teléfono de ejemplo: +51 999 999 999</span>')
+    .replace(/<a class="about-phone" href="tel:\+51956481871">[\s\S]*?<\/a>/g, '')
+    .replace(/<a href="mailto:jzavala@jjconsultores\.pe">([\s\S]*?)<\/a>/g, '<span>$1</span>')
+    .replace(/<a class="contact-email" href="mailto:jzavala@jjconsultores\.pe"><strong>[\s\S]*?<\/strong><\/a>/g, '<strong>contacto@example.com</strong>')
+    .replace(/<a class="footer-email"[^>]*>[\s\S]*?<\/a>/g, '')
+    .replace(/<a class="sp-email" href="mailto:jzavala@jjconsultores\.pe">[\s\S]*?<\/a>/g, '<span>contacto@example.com</span>')
+    .replace(/<a href="mailto:jzavala@jjconsultores\.pe">Escríbenos a [\s\S]*?<\/a>/g, '')
+    .replaceAll('jzavala@jjconsultores.pe', 'contacto@example.com')
+    .replace('<small>Teléfono de contacto</small>', '<small>Teléfono / WhatsApp</small>')
+    .replaceAll(demoOnePhone, '+51 999 999 999')
+    .replaceAll('Teléfono de contacto · correo de contacto proporcionado.', 'Datos de ejemplo · se reemplazarán antes de publicar.')
+    .replaceAll('Teléfono y correo de contacto proporcionados.', 'Datos de ejemplo · se reemplazarán antes de publicar.')
+    .replaceAll('El formulario de esta demo no envía ni guarda información.', 'Datos de contacto de ejemplo. El formulario de la demo no envía ni guarda información.')
+    .replaceAll('Teléfono de contacto', 'Datos de ejemplo')
+    .replaceAll('Teléfono de ejemplo: +51 999 999 999', '+51 999 999 999')
+    .replaceAll('Teléfono de ejemplo', 'Datos de ejemplo')
+    .replaceAll('El teléfono es de ejemplo. El formulario de esta demo no envía ni guarda información.', 'Datos de contacto de ejemplo. El formulario de la demo no envía ni guarda información.')
+    .replaceAll('<span>Correo de contacto</span>', '<span>Datos de ejemplo</span>');
 }
 
 function normalizeVisibleMain(html) {
@@ -79,7 +161,9 @@ function normalizeVisibleMain(html) {
 }
 
 function normalizeDemoOneClients(html) {
-  return normalizeAboutIntegration(html, 'demo1').replace(/<section class="clients-section" aria-labelledby="clients-title">([\s\S]*?)<\/section>/, (_, section) => {
+  return normalizeAboutIntegration(html, 'demo1')
+    .replace(/<div class="hero-photo(?:\s[^"]*)?">[\s\S]*?<\/div>/, '<div class="hero-photo">[hero image]</div>')
+    .replace(/<section class="clients-section" aria-labelledby="clients-title">([\s\S]*?)<\/section>/, (_, section) => {
     const heading = section.match(/<div class="clients-heading">[\s\S]*?<\/div>/)?.[0];
     assert.ok(heading, 'Client-section heading must be preserved');
     return `<section class="clients-section" aria-labelledby="clients-title">${heading}</section>`;
@@ -127,7 +211,7 @@ function assertServicePages(output) {
   for (const variant of [1, 2, 3]) {
     const home = `/demo${variant}/`;
     const html = readFileSync(join(output, home, 'servicios', 'index.html'), 'utf8');
-    assertSemanticDemo(html, output, false);
+    assertSemanticDemo(html, output, false, variant === 1, 'services');
     assertNotIndexable(html);
     assertConfirmedBrand(html);
     for (const category of categories) assert.ok(html.includes(`>${category}</h2>`), `Missing detailed service: ${category}`);
@@ -145,7 +229,10 @@ function assertServicePages(output) {
     assert.match(html, /Diseñamos, implementamos, revisamos y mejoramos/);
     assert.match(html, /Plan de acción con prioridades concretas/);
     assert.match(html, new RegExp(`class="services-page service-demo${variant}"`));
-    assert.doesNotMatch(html, /Big ?Four|ISO 9001|garantizamos|href="(?:mailto:|tel:)/i);
+    assert.doesNotMatch(html, /Big ?Four|ISO 9001|garantizamos/i);
+    if (variant !== 1) assert.doesNotMatch(html, /href="tel:/);
+    if (variant === 1) assert.match(html, /href="mailto:jzavala@jjconsultores\.pe"/);
+    else assert.doesNotMatch(html, /href="mailto:|jzavala@jjconsultores\.pe/);
     const landing = readFileSync(join(output, home, 'index.html'), 'utf8');
     assert.ok(landing.includes(`href="${home}servicios/"`), `Home must link its own services page: ${home}`);
   }
@@ -195,7 +282,7 @@ function assertCarouselAndPreservation(output, compareMetadata = true) {
 
 function assertAboutPage(output) {
   const html = readFileSync(join(output, 'demo1/nosotros/index.html'), 'utf8');
-  assertSemanticDemo(html, output, false);
+  assertSemanticDemo(html, output, false, true, 'about');
   assertNotIndexable(html);
   assertConfirmedBrand(html);
   assert.match(html, /<title>Nosotros \| J&amp;J CONSULTORES Y AUDITORES<\/title>/);
@@ -232,7 +319,7 @@ function assertConfirmedBrand(html) {
   assert.match(html, /class="jj-brand light"/);
   assert.doesNotMatch(html, /Identidad (?:comercial )?provisional/);
   assert.match(html, /Vista previa|vista previa/);
-  assert.match(html, /Datos de ejemplo|Contactos de ejemplo/);
+  assert.match(html, /Datos de ejemplo|Contactos de ejemplo|Teléfono de ejemplo|Teléfono de contacto/);
 }
 
 function assertPortfolioAndHistoricalDefaults(demoTwo, demoThree) {
@@ -332,6 +419,7 @@ test('Astro build fails closed for an invalid public origin', () => {
 
 test('generated preview contains semantic content, local assets and safe demo interactions', () => {
   const { output, html } = build('preview', {});
+  assert.match(html, /alt="Profesionales colaborando en una reunión de trabajo, fotografía ilustrativa"/);
   assert.equal((html.match(/<h1\b/g) || []).length, 1);
   assert.match(html, /<html lang="es-PE">/);
   assert.match(html, /<meta name="robots" content="noindex, nofollow">/);
@@ -355,7 +443,7 @@ test('generated preview contains semantic content, local assets and safe demo in
   assert.match(html, /fetchpriority="high"/);
   assert.ok(readdirSync(join(output, '_astro')).some((file) => file.endsWith('.woff2')));
   assert.doesNotMatch(html, /https:\/\/(fonts\.googleapis|fonts\.gstatic|images\.unsplash)/);
-  assert.doesNotMatch(html, /href="(?:mailto:|tel:|https:\/\/wa\.me)/);
+  assert.doesNotMatch(html, /jzavala@jjconsultores\.pe|href="(?:mailto:|tel:|https:\/\/wa\.me)/);
   assert.match(html, /Datos de ejemplo/);
   assert.match(html, /socios cuentan con 20 años de experiencia/);
   assert.match(html, /<form[^>]+onsubmit="return false"/);
@@ -368,8 +456,8 @@ test('generated preview contains semantic content, local assets and safe demo in
   const demoOne = readFileSync(join(output, 'demo1', 'index.html'), 'utf8');
   const demoTwo = readFileSync(join(output, 'demo2', 'index.html'), 'utf8');
   const demoThree = readFileSync(join(output, 'demo3', 'index.html'), 'utf8');
-  for (const demo of [demoOne, demoTwo, demoThree]) {
-    assertSemanticDemo(demo, output);
+  for (const [index, demo] of [demoOne, demoTwo, demoThree].entries()) {
+    assertSemanticDemo(demo, output, true, index === 0);
     assertNotIndexable(demo);
   }
   assert.equal(normalizeDemoOneClients(normalizeVisibleMain(demoOne)), normalizeDemoOneClients(normalizeVisibleMain(html)), 'Root and demo1 must have identical main content except the authorized client row');
@@ -459,7 +547,7 @@ test('configured production emits matching canonical, social metadata, schema an
   assert.doesNotMatch(sitemap, /demo1|demo2|demo3/);
   for (const route of ['demo1', 'demo2', 'demo3']) {
     const demo = readFileSync(join(output, route, 'index.html'), 'utf8');
-    assertSemanticDemo(demo, output);
+    assertSemanticDemo(demo, output, true, route === 'demo1');
     assertNotIndexable(demo);
     assert.doesNotMatch(demo, /property="og:image"|name="twitter:image"/);
     assertConfirmedBrand(demo);

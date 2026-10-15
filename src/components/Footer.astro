@@ -3,12 +3,18 @@ import Brand from './Brand.astro';
 import JJBrand from './JJBrand.astro';
 import Icon from './Icon.astro';
 import { company, navigation } from '../data/site';
+import { demo1ContactEmail, demo1ContactPhone } from '../data/demo1';
 interface Props { branded?: boolean; servicesHref?: string; aboutHref?: string; homeHref?: string; anchorBase?: string; }
 const { branded = false, servicesHref = '#servicios', aboutHref = '#nosotros', homeHref = '#inicio', anchorBase = '' } = Astro.props;
 const navigationHref = (href: string) => href === '#servicios' ? servicesHref : href === '#nosotros' ? aboutHref : `${anchorBase}${href}`;
 ---
 <footer class="site-footer">
   <div class="container footer-top">{branded ? <JJBrand light href={homeHref} /> : <Brand />}<p>Información clara.<br />Decisiones con confianza.</p><a href={homeHref} class="back-top">Volver al inicio <Icon /></a></div>
-  <div class="container footer-middle"><span>Auditoría · Contabilidad · Gestión empresarial</span><nav aria-label="Navegación del pie de página">{navigation.map((item) => <a href={navigationHref(item.href)}>{item.label}</a>)}</nav></div>
-  <div class="container footer-bottom"><span>© {new Date().getFullYear()} {company.legalName}</span><span>{branded ? 'Demo 1 · Vista previa · Datos de ejemplo' : 'Identidad comercial provisional · Vista previa'}</span></div>
+  <div class="container footer-middle"><span>Auditoría · Contabilidad · Gestión empresarial</span>{branded && <><a class="footer-phone" href={`tel:${demo1ContactPhone.replace(/\s/g, '')}`}><Icon name="phone" />{demo1ContactPhone}</a><a class="footer-email" href={`mailto:${demo1ContactEmail}`}><Icon name="mail" />{demo1ContactEmail}</a></>}<nav aria-label="Navegación del pie de página">{navigation.map((item) => <a href={navigationHref(item.href)}>{item.label}</a>)}</nav></div>
+  <div class="container footer-bottom"><span>© {new Date().getFullYear()} {company.legalName}</span><span>{branded ? 'Demo 1 · Vista previa · Teléfono de contacto' : 'Identidad comercial provisional · Vista previa'}</span></div>
 </footer>
+<style>
+  .footer-email, .footer-phone { display: flex; align-items: center; gap: 8px; color: #c9d1f3; font-size: 10px; text-decoration: none; }
+  .footer-email svg, .footer-phone svg { width: 14px; height: 14px; }
+  .footer-email:focus-visible, .footer-phone:focus-visible { outline: 2px solid #c9d1f3; outline-offset: 3px; }
+</style>

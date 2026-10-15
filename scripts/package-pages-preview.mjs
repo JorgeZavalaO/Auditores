@@ -159,7 +159,7 @@ export async function packagePayload(directory) {
   await writeFile(path.join(directory, '.nojekyll'), '');
   // Project-subpath robots is not authoritative for github.io; every page has noindex.
   await writeFile(path.join(directory, 'robots.txt'), 'User-agent: *\nAllow: /\n');
-  await writeFile(path.join(directory, 'README.md'), '# Approval preview\n\nGenerated website for design testing and approval only.\n\nAll pages request noindex, nofollow. Public access is not restricted.\nContacts are examples; forms do not send messages.\n\nGitHub Pages: deploy the main branch root, without Jekyll.\n');
+  await writeFile(path.join(directory, 'README.md'), '# Approval preview\n\nGenerated website for design testing and approval only.\n\nAll pages request noindex, nofollow. Public access is not restricted.\nDemo 1 uses the supplied contact email and phone; other demos use example contacts. Forms do not send messages.\n\nGitHub Pages: deploy the main branch root, without Jekyll.\n');
   return validatePayload(directory);
 }
 

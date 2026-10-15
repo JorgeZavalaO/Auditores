@@ -1,6 +1,11 @@
 ---
 import Icon from './Icon.astro';
 import { company, featuredServices, supportingServices } from '../data/site';
+import { demo1ContactEmail, demo1ContactPhone } from '../data/demo1';
+const isDemoOne = Astro.url.pathname.startsWith('/demo1/');
+const email = isDemoOne ? demo1ContactEmail : company.email;
+const phone = isDemoOne ? demo1ContactPhone : company.phone;
+const emailIsExample = !isDemoOne;
 ---
 <section id="contacto" class="contact-section section-space">
   <div class="container contact-grid">
@@ -9,10 +14,10 @@ import { company, featuredServices, supportingServices } from '../data/site';
       <h2>El primer paso hacia una gestión más clara.</h2>
       <p>Cuéntanos qué necesita tu empresa. Comencemos con un diagnóstico contable y tributario gratuito.</p>
       <div class="contact-details">
-        <div><span class="contact-icon"><Icon name="phone" /></span><div><small>Teléfono / WhatsApp</small><strong>{company.phone}</strong></div></div>
-        <div><span class="contact-icon"><Icon name="mail" /></span><div><small>Correo electrónico</small><strong>{company.email}</strong></div></div>
+        <div><span class="contact-icon"><Icon name="phone" /></span><div><small>{isDemoOne ? 'Teléfono de contacto' : 'Teléfono / WhatsApp'}</small>{isDemoOne ? <a class="contact-phone" href={`tel:${phone.replace(/\s/g, '')}`}><strong>{phone}</strong></a> : <strong>{phone}</strong>}</div></div>
+        <div><span class="contact-icon"><Icon name="mail" /></span><div><small>Correo electrónico</small>{emailIsExample ? <strong>{email}</strong> : <a class="contact-email" href={`mailto:${email}`}><strong>{email}</strong></a>}</div></div>
       </div>
-      <span class="contact-example">Datos de ejemplo · se reemplazarán antes de publicar.</span>
+      <span class="contact-example">{emailIsExample ? 'Datos de ejemplo · se reemplazarán antes de publicar.' : 'Teléfono y correo de contacto proporcionados.'}</span>
       <div class="contact-note"><Icon name="shield" /><span>La confidencialidad y el trato cercano son parte de nuestra forma de trabajar.</span></div>
     </div>
     <div class="form-panel">
@@ -46,6 +51,10 @@ import { company, featuredServices, supportingServices } from '../data/site';
   form?.addEventListener('submit', (event) => {
     event.preventDefault();
     if (!form.reportValidity()) return;
-    if (status) status.textContent = 'Vista previa: el formulario es válido. No se ha enviado ni guardado información. Los canales de contacto se habilitarán antes de publicar.';
+    if (status) status.textContent = 'Vista previa: el formulario es válido. No se ha enviado ni guardado información. Conecta un servicio de formularios para recibir solicitudes.';
   });
 </script>
+<style>
+  .contact-email, .contact-phone { color: inherit; text-decoration: none; }
+  .contact-email:focus-visible, .contact-phone:focus-visible { outline: 2px solid #0a1267; outline-offset: 3px; }
+</style>
