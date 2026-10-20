@@ -59,25 +59,21 @@ test('institutional data faithfully retains the supplied mission, vision, eight 
 
 test('the institutional composition retains readable text and a separate brand-led intent', () => {
   const page = readFileSync(new URL('src/components/AboutCompanyPage.astro', root), 'utf8');
-  assert.match(page, /<BaseLayout demo title=\{`Nosotros \|/);
+  assert.match(page, /<BaseLayout title=\{`Nosotros \|/);
   assert.match(page, /\.ac-values-grid p \{ font-size: 14px; line-height: 1.85; \}/);
   assert.match(page, /\.ac-purpose-grid p \{ color: #e4e8ff;/);
   assert.match(page, /Fotografía ilustrativa · No representa al equipo de la firma/);
   assert.doesNotMatch(page, /ServiceCatalog|<form\b|<script\b|animation:/);
 });
 
-test('the pending carousel source, behavior test and documentation remain intact during the about change', () => {
+test('the existing carousel source and behavior tests remain intact', () => {
   const snapshot = new URL('.astro/demo1-about-baseline.json', root);
   if (!existsSync(snapshot)) return;
   const previous = JSON.parse(readFileSync(snapshot, 'utf8'));
   for (const path of ['src/components/ClientLogoCarousel.astro', 'tests/client-carousel.test.mjs']) {
     assert.equal(readFileSync(new URL(path, root), 'utf8'), previous[path], `About changed pending carousel bytes: ${path}`);
   }
-  const readme = readFileSync(new URL('README.md', root), 'utf8');
-  for (const beginning of ['The selected `/demo1/` now uses', 'The baseline is a visible static logo grid', 'Hover within the **logo viewport only**']) {
-    const paragraph = previous['README.md'].split(/\r?\n/).find(line => line.startsWith(beginning));
-    assert.ok(paragraph && readme.includes(paragraph), 'Pending carousel documentation must remain exact');
-  }
+
 });
 
 test('CEO profile uses the confirmed portrait and supplied professional facts', () => {

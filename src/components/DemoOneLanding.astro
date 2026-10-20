@@ -8,21 +8,18 @@ import SectionHeading from './SectionHeading.astro';
 import ServiceCard from './ServiceCard.astro';
 import Contact from './Contact.astro';
 import ClientLogoCarousel from './ClientLogoCarousel.astro';
-import { clients, featuredServices, supportingServices, process, faqs } from '../data/site';
-import team from '../assets/photos/team.jpg';
+import { featuredServices, supportingServices, process, faqs } from '../data/site';
 import advisory from '../assets/photos/advisory.jpg';
 import demoOneHero from '../../img/Reunion-con-JZFv6.png';
-interface Props { demo?: boolean; }
-const { demo = false } = Astro.props;
-const metadata = demo ? {
+const metadata = {
   title: 'Auditoría y asesoría contable para MYPES en Perú | J&J CONSULTORES Y AUDITORES',
   description: 'J&J CONSULTORES Y AUDITORES: auditoría financiera y tributaria, outsourcing contable y gestión de planillas para MYPES en Perú. Diagnóstico contable y tributario gratuito.',
   siteName: 'J&J CONSULTORES Y AUDITORES',
   favicon: '/jj-favicon.svg',
-} : {};
+};
 ---
-<BaseLayout demo={demo} {...metadata}>
-  <Header branded={demo} servicesHref={demo ? '/demo1/servicios/' : '#servicios'} aboutHref={demo ? '/demo1/nosotros/' : '#nosotros'} />
+<BaseLayout {...metadata}>
+  <Header />
   <main id="contenido">
     <section id="inicio" class="hero">
       <div class="hero-grid container">
@@ -33,11 +30,10 @@ const metadata = demo ? {
           <div class="hero-actions"><a href="#contacto" class="button">Solicitar diagnóstico gratuito <Icon /></a><a href="#servicios" class="text-link">Explorar servicios <Icon /></a></div>
           <div class="hero-assurance"><span><Icon name="check" />Atención personalizada</span><span><Icon name="check" />Información confidencial</span></div>
         </div>
-        <div class="hero-visual">
+        <div class="hero-visual demo1-hero-visual">
           <div class="hero-blue-shape" aria-hidden="true"></div>
-          <div class:list={['hero-photo', demo && 'demo1-hero-photo']}><Image src={demo ? demoOneHero : team} alt={demo ? 'Equipo profesional reunido en una oficina durante una sesión de trabajo, fotografía ilustrativa' : 'Profesionales colaborando en una reunión de trabajo, fotografía ilustrativa'} widths={[640, 1000, 1400]} sizes="(max-width: 900px) 92vw, 48vw" format="webp" loading="eager" fetchpriority="high" /></div>
+          <div class="hero-photo demo1-hero-photo"><Image src={demoOneHero} alt="Equipo profesional reunido en una oficina durante una sesión de trabajo, fotografía ilustrativa" widths={[640, 1000, 1400]} sizes="(max-width: 900px) 92vw, 48vw" format="webp" loading="eager" fetchpriority="high" /></div>
           <div class="experience-badge"><strong>20<span>+</span></strong><span>Años de experiencia<br />de nuestros socios</span><div class="badge-line" aria-hidden="true"></div></div>
-          <div class="hero-caption"><span class="caption-dot"></span>Un equipo. Una visión más clara.</div>
           <span class="dot-pattern hero-dots" aria-hidden="true"></span>
         </div>
       </div>
@@ -45,7 +41,7 @@ const metadata = demo ? {
 
     <section class="clients-section" aria-labelledby="clients-title">
       <div class="container"><div class="clients-heading"><h2 id="clients-title">Empresas que forman parte de nuestro camino</h2><span>Relaciones construidas con compromiso</span></div>
-        {demo ? <ClientLogoCarousel /> : <div class="client-logos">{clients.map((client) => <div class="client-logo"><Image src={client.image} alt={client.name} width={150} height={65} fit="contain" format="webp" loading="lazy" /></div>)}</div>}
+        <ClientLogoCarousel />
       </div>
     </section>
 
@@ -58,7 +54,7 @@ const metadata = demo ? {
           <p>Somos una firma peruana orientada a MYPES. Nuestros socios cuentan con 20 años de experiencia en los sectores comercial, industrial y construcción.</p>
           <div class="about-values"><div><Icon name="check" /><span><strong>Anticiparnos, no solo corregir</strong>Identificamos riesgos y proponemos acciones preventivas.</span></div><div><Icon name="check" /><span><strong>Explicar con claridad</strong>Información útil y comprensible para decidir con criterio.</span></div></div>
           <a href="#metodologia" class="text-link">Conoce nuestra forma de trabajar <Icon /></a>
-          {demo && <div data-about-link><a href="/demo1/nosotros/" class="text-link">Conoce nuestra firma <Icon /></a></div>}
+          <div data-about-link><a href="/nosotros/" class="text-link">Conoce nuestra firma <Icon /></a></div>
         </div>
       </div>
     </section>
@@ -90,5 +86,5 @@ const metadata = demo ? {
     </section>
     <Contact />
   </main>
-  <Footer branded={demo} aboutHref={demo ? '/demo1/nosotros/' : '#nosotros'} />
+  <Footer />
 </BaseLayout>

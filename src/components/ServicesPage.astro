@@ -6,28 +6,23 @@ import Icon from './Icon.astro';
 import ServiceCatalog from './ServiceCatalog.astro';
 import { serviceCatalog } from '../data/serviceCatalog';
 import { company } from '../data/site';
-import { demo1ContactEmail, demo1ContactPhone } from '../data/demo1';
 import finance from '../assets/photos/finance.jpg';
-interface Props { variant: 1 | 2 | 3; }
-const { variant } = Astro.props;
-const home = `/demo${variant}/`;
-const contactEmail = variant === 1 ? demo1ContactEmail : company.email;
-const contactPhone = variant === 1 ? demo1ContactPhone : company.phone;
+const home = '/';
+const contactEmail = company.email;
+const contactPhone = company.phone;
 const identity = 'J&J CONSULTORES Y AUDITORES';
 const content = {
-  1: { eyebrow: 'SOLUCIONES PARA EL DÍA A DÍA Y LO QUE VIENE', title: 'El respaldo que tu empresa necesita para avanzar.', intro: 'Desde la gestión contable y laboral hasta la auditoría y la tecnología. Encuentra un servicio que responda al momento de tu negocio.', firm: '#nosotros', contact: 'Encontrar mi solución', label: 'CONTABILIDAD · PERSONAS · CONFIANZA' },
-  2: { eyebrow: 'PORTAFOLIO DE SERVICIOS EMPRESARIALES', title: 'Rigor para evaluar. Capacidad para acompañar.', intro: 'Auditoría financiera y tributaria, gestión especializada y procesos contables. Un portafolio para comprender riesgos y atender las necesidades de la organización.', firm: '#firma', contact: 'Definir el alcance del servicio', label: 'INFORMACIÓN · CONTROL · GESTIÓN' },
-  3: { eyebrow: 'NUESTRAS ÁREAS DE PRÁCTICA', title: 'Una perspectiva integral. Un acompañamiento concreto.', intro: 'La auditoría aporta perspectiva. La gestión, los procesos y la tecnología ayudan a convertir esa claridad en una base de trabajo más ordenada.', firm: '#firma', contact: 'Conversemos sobre tu organización', label: 'CRITERIO QUE SE CONVIERTE EN ACCIÓN' },
-}[variant];
+  eyebrow: 'SOLUCIONES PARA EL DÍA A DÍA Y LO QUE VIENE', title: 'El respaldo que tu empresa necesita para avanzar.', intro: 'Desde la gestión contable y laboral hasta la auditoría y la tecnología. Encuentra un servicio que responda al momento de tu negocio.', contact: 'Encontrar mi solución', label: 'CONTABILIDAD · PERSONAS · CONFIANZA',
+};
 ---
-<BaseLayout demo title={`Servicios contables y de auditoría | ${identity}`} description={`${identity}: auditoría, outsourcing contable, planillas, procesos, regularización y consultoría ERP. Diagnóstico contable y tributario gratuito.`} siteName={identity} favicon="/jj-favicon.svg">
-  <div class:list={['services-page', `service-demo${variant}`]}>
-    <div class="sp-notice"><div class="sp-container"><span>PERÚ · CONSULTORÍA EMPRESARIAL</span><span>Demo {variant} · Vista previa</span></div></div>
+<BaseLayout title={`Servicios contables y de auditoría | ${identity}`} description={`${identity}: auditoría, outsourcing contable, planillas, procesos, regularización y consultoría ERP. Diagnóstico contable y tributario gratuito.`} siteName={identity} favicon="/jj-favicon.svg">
+  <div class="services-page service-demo1">
+    <div class="sp-notice"><div class="sp-container"><span>PERÚ · CONSULTORÍA EMPRESARIAL</span><span>{identity}</span></div></div>
     <header class="sp-header">
       <div class="sp-container sp-header-inner">
         <JJBrand href={home} />
         <nav aria-label="Navegación principal">
-          <a href={home}>Inicio</a><a href="#catalogo" aria-current="page">Servicios</a><a href={variant === 1 ? `${home}nosotros/` : `${home}${content.firm}`}>La firma</a><a href={`${home}#contacto`} class="sp-contact-link">Conversemos <Icon /></a>
+          <a href={home}>Inicio</a><a href="/servicios/" aria-current="page">Servicios</a><a href="/nosotros/">Nosotros</a><a href={`${home}#contacto`} class="sp-contact-link">Conversemos <Icon /></a>
         </nav>
       </div>
     </header>
@@ -48,9 +43,9 @@ const content = {
           <div class="sp-detail"><ServiceCatalog home={home} /></div>
         </div>
       </section>
-      <section class="sp-next"><div class="sp-container"><div><span class="sp-eyebrow">EL SIGUIENTE PASO</span><h2>Una conversación para entender lo que necesitas.</h2><p>Cuéntanos sobre tu empresa y el servicio de interés. El formulario de esta demo es una vista previa: no envía ni guarda información.</p></div><a class="sp-button" href={`${home}#contacto`}>{content.contact}<Icon /></a></div></section>
+      <section class="sp-next"><div class="sp-container"><div><span class="sp-eyebrow">EL SIGUIENTE PASO</span><h2>Una conversación para entender lo que necesitas.</h2><p>Cuéntanos sobre tu empresa y el servicio de interés. El formulario de contacto es una vista previa: no envía ni guarda información.</p></div><a class="sp-button" href={`${home}#contacto`}>{content.contact}<Icon /></a></div></section>
     </main>
-    <footer class="sp-footer"><div class="sp-container sp-footer-top"><JJBrand light href={home} /><p>Criterio profesional.<br />Acompañamiento cercano.</p><a href={home}>Volver a la página principal <Icon /></a></div><div class="sp-container sp-example">{variant === 1 ? <><span>Correo de contacto</span><a class="sp-email" href={`mailto:${contactEmail}`}>{contactEmail}</a><span>Teléfono de contacto</span><a class="sp-phone" href={`tel:${contactPhone.replace(/\s/g, '')}`}>{contactPhone}</a></> : <><span>Datos de ejemplo</span><span>{company.email}</span><span>{contactPhone}</span></>}</div><div class="sp-container sp-footer-bottom"><span>© {new Date().getFullYear()} {company.legalName}</span><span>Demo {variant} · Vista previa</span></div></footer>
+    <footer class="sp-footer"><div class="sp-container sp-footer-top"><JJBrand light href={home} /><p>Criterio profesional.<br />Acompañamiento cercano.</p><a href={home}>Volver a la página principal <Icon /></a></div><div class="sp-container sp-example"><span>Correo de contacto</span><a class="sp-email" href={`mailto:${contactEmail}`}>{contactEmail}</a><span>Teléfono de contacto</span><a class="sp-phone" href={`tel:${contactPhone.replace(/\s/g, '')}`}>{contactPhone}</a></div><div class="sp-container sp-footer-bottom"><span>© {new Date().getFullYear()} {company.legalName}</span><span>Consultoría empresarial · Perú</span></div></footer>
   </div>
 </BaseLayout>
 <style>
@@ -102,34 +97,6 @@ const content = {
   .sp-email:focus-visible, .sp-phone:focus-visible { outline: 2px solid #d5dcf5; outline-offset: 3px; }
   .sp-footer-bottom { display: flex; justify-content: space-between; gap: 20px; font-size: 10px; border-top: 1px solid #333965; margin-top: 26px; padding-top: 23px; }
   .service-demo1 .sp-hero-photo { border: 12px solid #fff; box-shadow: 16px 16px 0 #dfe6f9; }
-  .service-demo2 { background: #fff; }
-  .service-demo2 .sp-hero { background: #0a1267; color: #e5e9ff; padding-bottom: 0; }
-  .service-demo2 .sp-hero-grid { grid-template-columns: 1.2fr 1fr; align-items: stretch; }
-  .service-demo2 .sp-hero-copy { padding-bottom: 55px; }
-  .service-demo2 .sp-hero h1, .service-demo2 .sp-hero .sp-eyebrow { color: #fff; }
-  .service-demo2 .sp-hero-copy > p { color: #e5e9ff; }
-  .service-demo2 .sp-hero .sp-button { color: #0a1267; background: #fff; }
-  .service-demo2 .sp-hero-photo img { height: 100%; min-height: 420px; }
-  .service-demo2 .sp-hero-photo > span { position: absolute; bottom: 0; inset-inline: 0; background: #080e45; }
-  .service-demo2 .sp-index ol { gap: 0; border-block: 1px solid #d6dce8; }
-  .service-demo2 .sp-index a { border: 0; padding: 20px 17px; }
-  .service-demo2 .sp-next { background: #f1f3f7; }
-  .service-demo3 { background: #f7f4ec; }
-  .service-demo3 .sp-header { background: #f7f4ec; border-color: #d3d1ca; }
-  .service-demo3 .sp-hero { padding-bottom: 35px; }
-  .service-demo3 .sp-hero-grid { display: block; }
-  .service-demo3 .sp-hero-copy { display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px 70px; align-items: start; }
-  .service-demo3 .sp-hero-copy > .sp-eyebrow { grid-column: 1 / -1; }
-  .service-demo3 h1, .service-demo3 .sp-catalog-intro h2, .service-demo3 .sp-next h2 { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; letter-spacing: -1px; }
-  .service-demo3 h1 { grid-row: 2 / 4; margin-top: 0; }
-  .service-demo3 .sp-hero-copy > p { margin: 0; }
-  .service-demo3 .sp-hero-photo { margin-top: 45px; }
-  .service-demo3 .sp-hero-photo img { height: 240px; }
-  .service-demo3 .sp-hero-photo > span { background: transparent; color: #0a1267; padding-inline: 0; border-bottom: 1px solid #cecdc7; }
-  .service-demo3 .sp-catalog-layout { display: grid; grid-template-columns: 230px 1fr; gap: 65px; }
-  .service-demo3 .sp-index ol { display: block; }
-  .service-demo3 .sp-index a { background: transparent; border: 0; border-bottom: 1px solid #cecdc7; justify-content: space-between; padding-inline: 0; }
-  .service-demo3 .sp-next { background: #ece8dd; }
   @media (max-width: 900px) {
     .sp-container { width: calc(100% - 48px); }
     .sp-header-inner { gap: 24px; flex-wrap: wrap; }
@@ -137,9 +104,6 @@ const content = {
     .sp-hero-grid { gap: 30px; }
     .sp-next > div { display: block; }
     .sp-next .sp-button { margin-top: 28px; }
-    .service-demo3 .sp-catalog-layout { grid-template-columns: 1fr; gap: 0; }
-    .service-demo3 .sp-index ol { display: flex; }
-    .service-demo3 .sp-index a { padding-inline: 12px; }
   }
   @media (max-width: 700px) {
     .sp-container { width: calc(100% - 40px); }
@@ -149,12 +113,10 @@ const content = {
     .service-demo1 .sp-header :global(.jj-monogram span) { font-size: 26px; }
     .service-demo1 .sp-header :global(.jj-wordmark) { font-size: 8px; }
     .sp-header nav { flex-wrap: wrap; gap: 16px 23px; }
-    .sp-hero-grid, .service-demo2 .sp-hero-grid, .service-demo3 .sp-hero-copy { display: block; }
+  .sp-hero-grid { display: block; }
     .sp-hero-copy { padding-bottom: 30px; }
-    .sp-hero-copy > p, .service-demo3 .sp-hero-copy > p { margin-block: 24px; }
-    .service-demo3 h1 { margin-top: 22px; }
-    .sp-hero-photo img, .service-demo2 .sp-hero-photo img { height: 280px; min-height: 0; }
-    .service-demo3 .sp-hero-photo { margin-top: 0; }
+  .sp-hero-copy > p { margin-block: 24px; }
+  .sp-hero-photo img { height: 280px; min-height: 0; }
     h1 { letter-spacing: -1px; }
     .sp-breadcrumb { margin-bottom: 30px; }
     .sp-catalog { padding-block: 45px 60px; }

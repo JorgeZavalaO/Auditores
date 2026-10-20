@@ -12,15 +12,15 @@ import finance from '../assets/photos/finance.jpg';
 import audit from '../assets/photos/audit.jpg';
 import advisory from '../assets/photos/advisory.jpg';
 
-// Provisional commercial identity; replace after the business approves its brand.
+// Confirmed business identity and public contact channels.
 export const company = {
-  name: 'Auditores',
+  name: 'J&J CONSULTORES Y AUDITORES',
   descriptor: 'Consultoría empresarial',
   legalName: 'J&J CONSULTORES Y AUDITORES S.A.C.',
-  email: 'contacto@example.com',
-  phone: '+51 999 999 999',
-  contactIsExample: true,
-  title: 'Auditoría y asesoría contable para MYPES en Perú | Auditores',
+  email: 'jzavala@jjconsultores.pe',
+  phone: '+51 956 481 871',
+  contactIsExample: false,
+  title: 'Auditoría y asesoría contable para MYPES en Perú | J&J CONSULTORES Y AUDITORES',
   description: 'Auditoría financiera y tributaria, outsourcing contable y gestión de planillas para MYPES en Perú. Conoce nuestro diagnóstico contable y tributario gratuito.',
 };
 

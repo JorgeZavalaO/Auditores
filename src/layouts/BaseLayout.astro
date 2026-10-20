@@ -8,22 +8,25 @@ import '../styles/global.css';
 import { company, featuredServices } from '../data/site';
 import { resolveSite } from '../../config/site.mjs';
 import { getImage } from 'astro:assets';
-import socialPhoto from '../assets/photos/team.jpg';
+import socialPhoto from '../../img/Reunion-con-JZFv6.png';
 
 interface Props { demo?: boolean; title?: string; description?: string; siteName?: string; favicon?: string; }
-const { demo = false, title = company.title, description = company.description, siteName = company.name, favicon = '/favicon.svg' } = Astro.props;
+const { demo = false, title = company.title, description = company.description, siteName = company.name, favicon = '/jj-favicon.svg' } = Astro.props;
 const deployment = resolveSite({ SITE_URL: Astro.site?.origin, PUBLIC_LAUNCH_READY: import.meta.env.PUBLIC_LAUNCH_READY });
 const indexable = deployment.indexable && !demo;
-const canonical = indexable ? new URL('/', deployment.origin).href : undefined;
+const businessUrl = deployment.origin ? new URL('/', deployment.origin).href : undefined;
+const canonical = indexable ? new URL(Astro.url.pathname, deployment.origin).href : undefined;
 const socialImage = await getImage({ src: socialPhoto, width: 1200, height: 630, format: 'webp', fit: 'cover' });
 const absoluteImage = canonical ? new URL(socialImage.src, canonical).href : undefined;
 const schema = canonical ? {
   '@context': 'https://schema.org',
   '@type': 'ProfessionalService',
-  '@id': `${canonical}#business`,
+  '@id': `${businessUrl}#business`,
   name: company.name,
   legalName: company.legalName,
-  url: canonical,
+  url: businessUrl,
+  email: company.email,
+  telephone: company.phone,
   description: company.description,
   areaServed: { '@type': 'Country', name: 'Peru' },
   hasOfferCatalog: {

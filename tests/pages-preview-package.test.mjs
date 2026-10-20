@@ -30,8 +30,8 @@ test('relocation preserves external, protocol-relative, data and fragment URLs',
   for (const url of ['https://example.org/a', '//cdn.example.org/a', 'data:image/png;base64,abc', '#inicio', 'relative.css']) {
     assert.equal(relocateUrl(url), url);
   }
-  assert.equal(relocateUrl('/demo3/#firma'), `${prefix}demo3/#firma`);
-  assert.equal(relocateUrl(`${prefix}demo3/`), `${prefix}demo3/`);
+  assert.equal(relocateUrl('/servicios/#auditoria'), `${prefix}servicios/#auditoria`);
+  assert.equal(relocateUrl(`${prefix}servicios/`), `${prefix}servicios/`);
   const html = '<img src="/_astro/a.webp" srcset="/_astro/a.webp 480w, /_astro/b.webp 800w"><a href="#inicio">Link</a>';
   assert.match(relocateText(html, '.html'), /srcset="\/auditores-preview\/_astro\/a.webp 480w, \/auditores-preview\/_astro\/b.webp 800w"/);
   assert.equal(relocateText("a{background:url('/_astro/a.webp')}b{src:url(data:font/woff;base64,abc)}", '.css'),
@@ -53,22 +53,22 @@ test('publication allowlist excludes source, secrets and documents', () => {
   for (const file of ['.env', 'source.js', 'company.docx', 'odd/tasks/preview.md', '_astro/file.map', '_astro/../.env', 'extra/index.html']) {
     assert.equal(allowedFile(file), false, file);
   }
-  for (const file of ['index.html', 'demo2/servicios/index.html', 'demo1/nosotros/index.html', '_astro/font.woff', '_astro/image.webp', '.nojekyll']) {
+  for (const file of ['index.html', 'servicios/index.html', 'nosotros/index.html', '_astro/font.woff', '_astro/image.webp', '.nojekyll']) {
     assert.equal(allowedFile(file), true, file);
   }
   assert.deepEqual(buildEnvironment({ PATH: 'local', PUBLIC_LAUNCH_READY: 'true', SITE_URL: 'https://production.com', PUBLIC_SECRET: 'secret' }),
     { PATH: 'local', NODE_ENV: 'production', PUBLIC_LAUNCH_READY: 'false', SITE_URL: '' });
 });
 
-test('package resolves all eight routes, fragments, srcsets, fonts and local scripts', async t => {
+test('package resolves all three routes, fragments, srcsets, fonts and local scripts', async t => {
   const directory = await fixture(t);
   await writeFile(path.join(directory, 'index.html'), '<meta name="robots" content="noindex, nofollow"><div id="inicio"></div>'
-    + '<a href="/demo3/#inicio">Demo</a><a href="/demo1/nosotros/#inicio">Nosotros</a><a href="#inicio">Home</a><img src="/_astro/image.webp" srcset="/_astro/image.webp 1x, /_astro/image.webp 2x">'
+    + '<a href="/servicios/#inicio">Servicios</a><a href="/nosotros/#inicio">Nosotros</a><a href="/#inicio">Inicio</a><a href="/">Home</a><a href="#inicio">Sección</a><img src="/_astro/image.webp" srcset="/_astro/image.webp 1x, /_astro/image.webp 2x">'
     + '<link href="/_astro/style.css"><script src="/_astro/local.js"></script>');
   const report = await packagePayload(directory);
-  assert.equal(report.files.filter(file => file.endsWith('.html')).length, 8);
-  assert.ok(routes.includes('demo1/nosotros/index.html'));
-  assert.match(await readFile(path.join(directory, 'index.html'), 'utf8'), /href="\/auditores-preview\/demo1\/nosotros\/#inicio"/);
+  assert.equal(report.files.filter(file => file.endsWith('.html')).length, 3);
+  assert.ok(routes.includes('nosotros/index.html'));
+  assert.match(await readFile(path.join(directory, 'index.html'), 'utf8'), /href="\/auditores-preview\/nosotros\/#inicio"/);
   assert.ok(report.bytes > 0);
   assert.match(await readFile(path.join(directory, '_astro/style.css'), 'utf8'), /auditores-preview/);
   assert.equal(await readFile(path.join(directory, 'robots.txt'), 'utf8'), 'User-agent: *\nAllow: /\n');
@@ -86,7 +86,7 @@ test('validation fails closed on missing routes, bad metadata, unresolved refere
     [safe + '<script type="application/ld+json">{}</script>', /Launch metadata/],
     [safe + '<a href="/demo1/">Outside</a>', /escapes/],
     [safe + `<img src="${prefix}_astro/missing.webp">`, /Unresolved/],
-    [safe + `<a href="${prefix}demo1/#missing">Missing</a>`, /fragment/],
+    [safe + `<a href="${prefix}#missing">Missing</a>`, /fragment/],
     [safe + '<a href="javascript:alert(1)">Unsafe</a>', /Unsupported URL/],
     [safe + '<img src=/_astro/image.webp>', /unquoted/],
     [safe + '<script>fetch("/api")</script>', /script resource/],
@@ -99,6 +99,6 @@ test('validation fails closed on missing routes, bad metadata, unresolved refere
   await writeFile(path.join(directory, 'secret.env'), 'secret');
   await assert.rejects(validatePayload(directory), /Unexpected publication file/);
   await rm(path.join(directory, 'secret.env'));
-  await rm(path.join(directory, 'demo2/index.html'));
+  await rm(path.join(directory, 'servicios/index.html'));
   await assert.rejects(validatePayload(directory), /Missing preview route/);
 });

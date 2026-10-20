@@ -48,25 +48,9 @@ const { home } = Astro.props;
   :global(.service-demo1) .catalog-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 26px; }
   :global(.service-demo1) .catalog-service { background: #fff; border: 1px solid #e1e5ee; padding: 35px; box-shadow: 0 9px 24px #0a126705; }
   :global(.service-demo1) .catalog-marker { padding-bottom: 25px; font-weight: 700; }
-  :global(.service-demo2) .catalog-service { display: grid; grid-template-columns: 170px 1fr; padding: 45px 0; border-bottom: 1px solid #d9dde7; }
-  :global(.service-demo2) .catalog-marker { flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 30px; }
-  :global(.service-demo2) .catalog-marker > span { font-size: 44px; font-weight: 500; }
-  :global(.service-demo2) .catalog-copy { display: grid; grid-template-columns: 1fr 1fr; gap: 0 42px; }
-  :global(.service-demo2) .catalog-copy > h2, :global(.service-demo2) .catalog-copy > p, :global(.service-demo2) .catalog-link { grid-column: 1 / -1; }
-  :global(.service-demo2) .catalog-copy > ul { grid-column: 1; }
-  :global(.service-demo2) .catalog-value { grid-column: 2; grid-row: 3 / 5; border: 0; margin-top: 0; }
-  :global(.service-demo3) .catalog-service { display: grid; grid-template-columns: 85px 1fr; border-top: 1px solid #cfd0d3; padding: 48px 0; }
-  :global(.service-demo3) .catalog-marker { flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 26px; font-family: Georgia, serif; font-size: 22px; }
-  :global(.service-demo3) .catalog-service h2, :global(.service-demo3) .catalog-diagnosis h2 { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; font-size: clamp(27px, 3vw, 38px); }
-  :global(.service-demo3) .catalog-diagnosis { background: #ece8dd; color: #262c42; border-block: 1px solid #c5c4c0; }
-  :global(.service-demo3) .catalog-diagnosis p { color: #505569; }
-  :global(.service-demo3) .catalog-free, :global(.service-demo3) .catalog-action { background: #0a1267; color: #fff; }
   @media (max-width: 700px) {
     :global(.service-demo1) .catalog-list { grid-template-columns: 1fr; }
     :global(.service-demo1) .catalog-service { padding: 27px; }
-    :global(.service-demo2) .catalog-service, :global(.service-demo3) .catalog-service { grid-template-columns: 1fr; gap: 25px; }
-    :global(.service-demo2) .catalog-marker, :global(.service-demo3) .catalog-marker { flex-direction: row; align-items: center; justify-content: space-between; }
-    :global(.service-demo2) .catalog-copy { display: block; }
     .catalog-diagnosis { grid-template-columns: 1fr; padding: 30px 25px; gap: 30px; margin-top: 40px; }
   }
 </style>

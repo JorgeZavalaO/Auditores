@@ -6,9 +6,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 // Usage: node scripts/package-pages-preview.mjs
 // Publish only the reported .astro/pages-preview payload, never this source tree.
 export const prefix = '/auditores-preview/';
-export const routes = ['index.html', ...[1, 2, 3].flatMap(n => [
-  `demo${n}/index.html`, `demo${n}/servicios/index.html`,
-]), 'demo1/nosotros/index.html'];
+export const routes = ['index.html', 'nosotros/index.html', 'servicios/index.html'];
 const root = fileURLToPath(new URL('../', import.meta.url));
 export const output = path.join(root, '.astro', 'pages-preview');
 const origin = 'https://jorgezavalao.github.io';
@@ -113,7 +111,7 @@ export async function validatePayload(directory) {
     const decodedPath = decodeURIComponent(url.pathname);
     if (!decodedPath.startsWith(prefix)) throw new Error(`URL escapes project prefix: ${value}`);
     let target = decodedPath.slice(prefix.length);
-    if (target.endsWith('/')) target += 'index.html';
+    if (!target || target.endsWith('/')) target += 'index.html';
     if (target.split('/').includes('..') || !available.has(target)) {
       throw new Error(`Unresolved ${kind} in ${from}: ${value}`);
     }
@@ -159,7 +157,7 @@ export async function packagePayload(directory) {
   await writeFile(path.join(directory, '.nojekyll'), '');
   // Project-subpath robots is not authoritative for github.io; every page has noindex.
   await writeFile(path.join(directory, 'robots.txt'), 'User-agent: *\nAllow: /\n');
-  await writeFile(path.join(directory, 'README.md'), '# Approval preview\n\nGenerated website for design testing and approval only.\n\nAll pages request noindex, nofollow. Public access is not restricted.\nDemo 1 uses the supplied contact email and phone; other demos use example contacts. Forms do not send messages.\n\nGitHub Pages: deploy the main branch root, without Jekyll.\n');
+  await writeFile(path.join(directory, 'README.md'), '# Approval preview\n\nGenerated J&J CONSULTORES Y AUDITORES website for design testing and approval only.\n\nRoutes: /, /nosotros/, /servicios/. All pages request noindex, nofollow. Public access is not restricted.\nThe supplied contact email and phone are used throughout. The contact form does not send messages.\n\nGitHub Pages: deploy the main branch root, without Jekyll.\n');
   return validatePayload(directory);
 }
 

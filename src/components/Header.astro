@@ -1,9 +1,7 @@
 ---
-import Brand from './Brand.astro';
 import JJBrand from './JJBrand.astro';
 import Icon from './Icon.astro';
 import { company, navigation } from '../data/site';
-import { demo1ContactEmail, demo1ContactPhone } from '../data/demo1';
 interface Props {
   branded?: boolean;
   servicesHref?: string;
@@ -12,20 +10,20 @@ interface Props {
   anchorBase?: string;
   aboutCurrent?: boolean;
 }
-const { branded = false, servicesHref = '#servicios', aboutHref = '#nosotros', homeHref = '#inicio', anchorBase = '', aboutCurrent = false } = Astro.props;
-const contactEmail = branded ? demo1ContactEmail : company.email;
-const contactPhone = branded ? demo1ContactPhone : company.phone;
+const { servicesHref = '/servicios/', aboutHref = '/nosotros/', homeHref = '/', anchorBase = '/', aboutCurrent = false } = Astro.props;
+const contactEmail = company.email;
+const contactPhone = company.phone;
 const navigationHref = (href: string) => href === '#servicios' ? servicesHref : href === '#nosotros' ? aboutHref : `${anchorBase}${href}`;
 ---
 <div class="utility-bar">
   <div class="container utility-inner">
     <span>Una mirada clara para tu empresa.</span>
-    <div class="utility-contacts"><span class="example-tag">{branded ? 'Teléfono de contacto' : 'Datos de ejemplo'}</span>{branded ? <a class="utility-phone" href={`tel:${contactPhone.replace(/\s/g, '')}`}><Icon name="phone" />{contactPhone}</a> : <span><Icon name="phone" />{contactPhone}</span>}{branded ? <a href={`mailto:${contactEmail}`}><Icon name="mail" />{contactEmail}</a> : <span><Icon name="mail" />{contactEmail}</span>}</div>
+    <div class="utility-contacts"><span class="example-tag">Teléfono de contacto</span><a class="utility-phone" href={`tel:${contactPhone.replace(/\s/g, '')}`}><Icon name="phone" />{contactPhone}</a><a href={`mailto:${contactEmail}`}><Icon name="mail" />{contactEmail}</a></div>
   </div>
 </div>
 <header class="site-header">
   <div class="container header-inner">
-    {branded ? <JJBrand href={homeHref} /> : <Brand />}
+    <JJBrand href={homeHref} />
     <button class="menu-toggle" type="button" aria-controls="primary-navigation" aria-expanded="false" aria-label="Abrir menú de navegación" hidden><span></span><span></span></button>
     <nav id="primary-navigation" aria-label="Navegación principal">
       {navigation.map((item) => <a href={navigationHref(item.href)} aria-current={aboutCurrent && item.href === '#nosotros' ? 'page' : undefined}>{item.label}</a>)}

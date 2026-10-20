@@ -1,376 +1,123 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { resolve, join } from 'node:path';
+import { resolve, join, relative } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { test } from 'node:test';
 import { resolveSite } from '../config/site.mjs';
+import { output as packageOutput, routes, srcsetCandidates, validatePayload } from '../scripts/package-pages-preview.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const cli = join(root, 'node_modules', 'astro', 'bin', 'astro.mjs');
-const demoOnePhone = '+51 956 481 871';
-const demoOnePhoneHref = 'tel:+51956481871';
+const pagePaths = ['/', '/nosotros/', '/servicios/'];
+const email = 'jzavala@jjconsultores.pe';
+const phone = '+51 956 481 871';
+const phoneHref = 'tel:+51956481871';
 
 function build(name, environment) {
   const output = join(root, '.astro', 'test-builds', name);
   const result = spawnSync(process.execPath, [cli, 'build', '--outDir', output], {
     cwd: root,
     env: { ...process.env, SITE_URL: '', PUBLIC_LAUNCH_READY: 'false', ...environment },
-    encoding: 'utf8',
-    timeout: 120_000,
+    encoding: 'utf8', timeout: 120_000,
   });
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
   return { output, html: readFileSync(join(output, 'index.html'), 'utf8') };
 }
 
-function assertSemanticDemo(html, output, requireForm = true, demoOneContact = false, demoOnePage = 'home') {
-  assert.equal((html.match(/<h1\b/g) || []).length, 1);
-  assert.match(html, /<html lang="es-PE">/);
-  const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]);
-  const uniqueIds = new Set(ids);
-  assert.equal(uniqueIds.size, ids.length, 'Demo IDs must be unique');
-  for (const match of html.matchAll(/href="#([^"]+)"/g)) {
-    assert.ok(uniqueIds.has(match[1]), `Missing demo anchor: ${match[1]}`);
-  }
-  for (const match of html.matchAll(/<img\b[^>]*src="([^"]+)"[^>]*>/g)) {
-    assert.ok(match[1].startsWith('/_astro/'), 'Demo images must be local');
-    assert.ok(existsSync(join(output, match[1])), `Missing demo image: ${match[1]}`);
-    assert.match(match[0], /width="\d+"/);
-    assert.match(match[0], /height="\d+"/);
-    assert.match(match[0], /alt="[^"]+"/);
-  }
-  if (requireForm) {
-    assert.match(html, /<form[^>]+onsubmit="return false"/);
-    assert.match(html, /No envía ni guarda información/);
-    assert.match(html, /type="email"[^>]+required/);
-    assert.match(html, /role="status" aria-live="polite"/);
-  } else assert.doesNotMatch(html, /<form\b/);
-  assert.match(html, demoOneContact ? /Teléfono de contacto/ : /Datos de ejemplo/);
-  if (demoOneContact) {
-    assert.match(html, /href="mailto:jzavala@jjconsultores\.pe"/);
-    assert.match(html, /jzavala@jjconsultores\.pe/);
-    assert.doesNotMatch(html, /contacto@example\.com/);
-    assertDemoOneEmailPlacement(html, demoOnePage);
-    assertDemoOnePhonePlacement(html, demoOnePage);
-    if (demoOnePage === 'home') {
-      assert.match(html, /alt="Equipo profesional reunido en una oficina durante una sesión de trabajo, fotografía ilustrativa"/);
-      assert.match(readFileSync(join(root, 'src/styles/global.css'), 'utf8'), /\.hero-photo\.demo1-hero-photo img \{ object-position: 58% center; \}/);
+function htmlFiles(directory, base = directory) {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(directory, entry.name);
+    return entry.isDirectory() ? htmlFiles(path, base) : path.endsWith('.html') ? [relative(base, path).replaceAll('\\', '/')] : [];
+  }).sort();
+}
+
+function readPages(output) {
+  assert.deepEqual(htmlFiles(output), ['index.html', 'nosotros/index.html', 'servicios/index.html']);
+  return new Map(pagePaths.map((path) => [path, readFileSync(join(output, path, 'index.html'), 'utf8')]));
+}
+
+function assertPageContent(pages, output) {
+  const titles = new Set();
+  const descriptions = new Set();
+  for (const [path, html] of pages) {
+    assert.equal((html.match(/<h1\b/g) || []).length, 1, path);
+    assert.match(html, /<html lang="es-PE">/);
+    const title = html.match(/<title>(.*?)<\/title>/)?.[1];
+    const description = html.match(/<meta name="description" content="([^"]+)"/)?.[1];
+    assert.ok(title && description, path);
+    titles.add(title);
+    descriptions.add(description);
+    assert.match(html, /J(?:&amp;|&)J CONSULTORES Y AUDITORES/);
+    assert.doesNotMatch(html, /href=["']\/demo[123](?:\/|["'])|\bDemo [123]\b|Identidad comercial provisional|contacto@example\.com|\+51 999 999 999/);
+    assert.match(html, /href="\/nosotros\/"/);
+    assert.match(html, /href="\/servicios\/"/);
+    const footer = html.match(/<footer\b[\s\S]*?<\/footer>/)?.[0];
+    assert.ok(footer, path);
+    assert.ok(footer.includes(`href="mailto:${email}"`), `${path}: footer email`);
+    assert.ok(footer.includes(`href="${phoneHref}"`), `${path}: footer phone`);
+    assert.ok(footer.includes(phone), path);
+    const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]);
+    assert.equal(new Set(ids).size, ids.length, `${path}: duplicate IDs`);
+    for (const [tag] of html.matchAll(/<img\b[^>]*>/g)) {
+      assert.match(tag, /alt="[^"]+"/);
+      assert.match(tag, /width="\d+"/);
+      assert.match(tag, /height="\d+"/);
+      assert.match(tag, /src="\/_astro\//);
     }
-  } else {
-    assert.match(html, /contacto@example\.com/);
-    assert.doesNotMatch(html, /jzavala@jjconsultores\.pe|\+51 956 481 871|href="(?:mailto:|tel:|https:\/\/wa\.me)/);
-  }
-  if (!demoOneContact) assert.doesNotMatch(html, /href="tel:/);
-  assert.doesNotMatch(html, /href="https:\/\/wa\.me/);
-  assert.doesNotMatch(html, /localStorage|sessionStorage|fetch\(/);
-}
-
-function assertDemoOneEmailPlacement(html, page) {
-  const assertLinkIn = (container, endMarker, link) => {
-    const start = html.indexOf(container);
-    const end = html.indexOf(endMarker, start);
-    assert.ok(start >= 0 && end > start, `Missing contact region: ${container}`);
-    assert.match(html.slice(start, end), link);
-  };
-  const emailLink = /<a[^>]*href="mailto:jzavala@jjconsultores\.pe"[^>]*>/;
-  if (page === 'services') {
-    assertLinkIn('class="sp-container sp-example"', '</div>', /<a class="sp-email" href="mailto:jzavala@jjconsultores\.pe"[^>]*>/);
-    return;
-  }
-  assertLinkIn('class="utility-contacts"', '</div>', emailLink);
-  assertLinkIn('class="container footer-middle"', '<nav', /<a class="footer-email" href="mailto:jzavala@jjconsultores\.pe"[^>]*>/);
-  if (page === 'home') assertLinkIn('class="contact-details"', 'class="contact-example"', /<a class="contact-email" href="mailto:jzavala@jjconsultores\.pe"[^>]*>/);
-  if (page === 'about') assertLinkIn('class="ac-next-actions"', '</div>', emailLink);
-}
-
-function assertDemoOnePhonePlacement(html, page) {
-  const assertLinkIn = (container, endMarker, link = /href="tel:\+51956481871"/) => {
-    const start = html.indexOf(container);
-    const end = html.indexOf(endMarker, start);
-    assert.ok(start >= 0 && end > start, `Missing phone region: ${container}`);
-    assert.match(html.slice(start, end), link);
-  };
-  assert.ok(html.includes(demoOnePhoneHref));
-  assert.ok(html.includes(demoOnePhone));
-  assert.doesNotMatch(html, /Teléfono de ejemplo|\+51 999 999 999/);
-  if (page === 'services') {
-    assertLinkIn('class="sp-container sp-example"', '</div>', /<a class="sp-phone" href="tel:\+51956481871"/);
-    return;
-  }
-  assertLinkIn('class="utility-contacts"', '</div>', /<a class="utility-phone" href="tel:\+51956481871"/);
-  assertLinkIn('class="container footer-middle"', '<nav', /<a class="footer-phone" href="tel:\+51956481871"/);
-  if (page === 'home') assertLinkIn('class="contact-details"', 'class="contact-example"', /<a class="contact-phone" href="tel:\+51956481871"/);
-  if (page === 'about') assertLinkIn('class="ac-next-actions"', '</div>', /<a class="about-phone" href="tel:\+51956481871"/);
-}
-
-function assertNotIndexable(html) {
-  assert.match(html, /<meta name="robots" content="noindex, nofollow">/);
-  assert.doesNotMatch(html, /rel="canonical"|application\/ld\+json|property="og:url"/);
-}
-
-function serviceOptions(html) {
-  const select = html.match(/<select\b[^>]*name="service"[^>]*>([\s\S]*?)<\/select>/)?.[1];
-  assert.ok(select, 'Service selector must exist');
-  return [...select.matchAll(/<option\b[^>]*>([^<]*)<\/option>/g)].map((match) => match[1]);
-}
-
-function normalizeVisibleBody(html) {
-  const body = html.includes('<body>') ? html.match(/<body>([\s\S]*?)<\/body>/)?.[1] : html;
-  assert.ok(body);
-  return body.replace(/<script\b[\s\S]*?<\/script>/g, '').replace(/\sdata-astro-cid-[a-z0-9]+(?:="[^"]*")?/gi, '');
-}
-
-function normalizeAboutIntegration(html, route) {
-  if (route === 'demo1') return normalizeDemoOneContact(html)
-    .replace(/<div data-about-link>[\s\S]*?<\/div>/g, '')
-    .replace(/href="\/demo1\/nosotros\/"/g, 'href="#nosotros"');
-  if (route === 'demo1/servicios') return normalizeDemoOneContact(html).replace('href="/demo1/nosotros/"', 'href="/demo1/#nosotros"');
-  if (route === 'demo1/nosotros') return normalizeDemoOneContact(html);
-  return html;
-}
-
-function normalizeDemoOneContact(html) {
-  return html
-    .replace(/<div class="hero-photo(?:\s[^"]*)?">[\s\S]*?<\/div>/, '<div class="hero-photo">[hero image]</div>')
-    .replace(/<a class="utility-phone" href="tel:\+51956481871">([\s\S]*?)<\/a>/g, '<span>$1</span>')
-    .replace(/<a class="footer-phone" href="tel:\+51956481871">[\s\S]*?<\/a>/g, '')
-    .replace(/<a class="contact-phone" href="tel:\+51956481871"><strong>[\s\S]*?<\/strong><\/a>/g, '<strong>+51 999 999 999</strong>')
-    .replace(/<span>Teléfono de contacto<\/span><a class="sp-phone" href="tel:\+51956481871">[\s\S]*?<\/a>/g, '<span>Teléfono de ejemplo: +51 999 999 999</span>')
-    .replace(/<a class="about-phone" href="tel:\+51956481871">[\s\S]*?<\/a>/g, '')
-    .replace(/<a href="mailto:jzavala@jjconsultores\.pe">([\s\S]*?)<\/a>/g, '<span>$1</span>')
-    .replace(/<a class="contact-email" href="mailto:jzavala@jjconsultores\.pe"><strong>[\s\S]*?<\/strong><\/a>/g, '<strong>contacto@example.com</strong>')
-    .replace(/<a class="footer-email"[^>]*>[\s\S]*?<\/a>/g, '')
-    .replace(/<a class="sp-email" href="mailto:jzavala@jjconsultores\.pe">[\s\S]*?<\/a>/g, '<span>contacto@example.com</span>')
-    .replace(/<a href="mailto:jzavala@jjconsultores\.pe">Escríbenos a [\s\S]*?<\/a>/g, '')
-    .replaceAll('jzavala@jjconsultores.pe', 'contacto@example.com')
-    .replace('<small>Teléfono de contacto</small>', '<small>Teléfono / WhatsApp</small>')
-    .replaceAll(demoOnePhone, '+51 999 999 999')
-    .replaceAll('Teléfono de contacto · correo de contacto proporcionado.', 'Datos de ejemplo · se reemplazarán antes de publicar.')
-    .replaceAll('Teléfono y correo de contacto proporcionados.', 'Datos de ejemplo · se reemplazarán antes de publicar.')
-    .replaceAll('El formulario de esta demo no envía ni guarda información.', 'Datos de contacto de ejemplo. El formulario de la demo no envía ni guarda información.')
-    .replaceAll('Teléfono de contacto', 'Datos de ejemplo')
-    .replaceAll('Teléfono de ejemplo: +51 999 999 999', '+51 999 999 999')
-    .replaceAll('Teléfono de ejemplo', 'Datos de ejemplo')
-    .replaceAll('El teléfono es de ejemplo. El formulario de esta demo no envía ni guarda información.', 'Datos de contacto de ejemplo. El formulario de la demo no envía ni guarda información.')
-    .replaceAll('<span>Correo de contacto</span>', '<span>Datos de ejemplo</span>');
-}
-
-function normalizeVisibleMain(html) {
-  const main = html.match(/<main\b[^>]*>([\s\S]*?)<\/main>/)?.[1];
-  assert.ok(main);
-  return normalizeVisibleBody(main);
-}
-
-function normalizeDemoOneClients(html) {
-  return normalizeAboutIntegration(html, 'demo1')
-    .replace(/<div class="hero-photo(?:\s[^"]*)?">[\s\S]*?<\/div>/, '<div class="hero-photo">[hero image]</div>')
-    .replace(/<section class="clients-section" aria-labelledby="clients-title">([\s\S]*?)<\/section>/, (_, section) => {
-    const heading = section.match(/<div class="clients-heading">[\s\S]*?<\/div>/)?.[0];
-    assert.ok(heading, 'Client-section heading must be preserved');
-    return `<section class="clients-section" aria-labelledby="clients-title">${heading}</section>`;
-  });
-}
-
-function normalizePreservedMain(html, route) {
-  const main = normalizeVisibleMain(html);
-  return route === 'demo1' ? normalizeDemoOneClients(main) : main;
-}
-
-function normalizeHistoricalHome(html, route) {
-  const body = route === 'demo1' ? normalizeDemoOneClients(normalizeVisibleBody(html)) : normalizeVisibleBody(html);
-  if (route === 'demo2') return body.replace('<a href="/demo2/servicios/">Servicios</a>', '');
-  return body.replace(`href="/${route}/servicios/"`, 'href="#servicios"');
-}
-
-function assertLocalDestinations(output) {
-  const pages = ['/', '/demo1/', '/demo2/', '/demo3/', '/demo1/servicios/', '/demo2/servicios/', '/demo3/servicios/', '/demo1/nosotros/'];
-  for (const page of pages) {
-    const html = readFileSync(join(output, page, 'index.html'), 'utf8');
-    for (const [, href] of html.matchAll(/href="([^"]+)"/g)) {
-      if (/^(?:https?:|mailto:|tel:)/.test(href)) continue;
-      const target = new URL(href, `https://preview.invalid${page}`);
-      const file = target.pathname.endsWith('/') ? join(output, target.pathname, 'index.html') : join(output, target.pathname);
-      assert.ok(existsSync(file), `Missing destination ${href} from ${page}`);
-      if (target.hash) {
-        const destination = readFileSync(file, 'utf8');
-        assert.ok(destination.includes(`id="${decodeURIComponent(target.hash.slice(1))}"`), `Missing fragment ${href} from ${page}`);
+    for (const [, attribute, value] of html.matchAll(/\b(href|src|srcset)="([^"]+)"/g)) {
+      const urls = attribute === 'srcset' ? srcsetCandidates(value).map((candidate) => candidate.url) : [value];
+      for (const url of urls) {
+        if (/^(?:https?:|mailto:|tel:|data:|\/\/)/.test(url)) continue;
+        const resolved = new URL(url.replaceAll('&amp;', '&'), `https://fixture.pe${path}`);
+        const target = join(output, decodeURIComponent(resolved.pathname), resolved.pathname.endsWith('/') ? 'index.html' : '');
+        assert.ok(existsSync(target), `${path}: unresolved ${attribute} ${url}`);
+        if (resolved.hash) {
+          const targetHtml = pages.get(resolved.pathname);
+          assert.ok(targetHtml?.includes(`id="${decodeURIComponent(resolved.hash.slice(1))}"`), `${path}: missing fragment ${url}`);
+        }
       }
     }
+    assert.doesNotMatch(html, /fonts\.googleapis|images\.unsplash|localStorage|sessionStorage|fetch\(/);
   }
+  assert.equal(titles.size, 3, 'Each intent needs a distinct title');
+  assert.equal(descriptions.size, 3, 'Each intent needs a distinct description');
+  const home = pages.get('/');
+  assert.match(home, /Claridad en tus números/);
+  assert.match(home, /class="hero-visual demo1-hero-visual"/);
+  assert.match(home, /class="hero-photo demo1-hero-photo"/);
+  assert.match(home, /Equipo profesional reunido en una oficina/);
+  assert.doesNotMatch(home, /class="hero-caption"/);
+  const beforeMain = home.slice(0, home.indexOf('<main'));
+  const contact = home.match(/<section id="contacto"[\s\S]*?<\/section>/)?.[0];
+  for (const region of [beforeMain, contact]) {
+    assert.ok(region?.includes(`href="mailto:${email}"`));
+    assert.ok(region?.includes(`href="${phoneHref}"`));
+  }
+  assert.match(home, /<form[^>]+onsubmit="return false"/);
+  assert.match(home, /Formulario de vista previa\. No envía ni guarda información\./);
+  assert.match(home, /type="email"[^>]+required/);
+  assert.match(home, /role="status" aria-live="polite"/);
+  assert.equal((home.match(/<details>/g) || []).length, 5);
+  for (const client of ['AQUARA', 'CMFC', 'DELPA', 'ECEL', 'HFP', 'MRTHREE', 'SANTOS', 'TRAIRE', 'VENMATIC', 'VIPE']) {
+    assert.equal((home.match(new RegExp(`alt="${client}"`, 'g')) || []).length, 2, client);
+  }
+  const about = pages.get('/nosotros/');
+  assert.doesNotMatch(about, /<form\b/);
+  for (const value of ['Integridad', 'Excelencia', 'Compromiso', 'Prevención', 'Confidencialidad', 'Cercanía', 'Innovación', 'Orientación a resultados']) assert.ok(about.includes(value), value);
+  assert.match(about, /Jorge Luis Zavala Félix/);
+  assert.match(about, /más de 20 años/);
+  assert.match(about, /más de 5 años/);
+  assert.match(about, /aria-current="page"/);
+  const services = pages.get('/servicios/');
+  assert.doesNotMatch(services, /<form\b|service-demo[23]/);
+  const catalogSource = readFileSync(join(root, 'src/data/serviceCatalog.ts'), 'utf8');
+  const serviceIds = [...catalogSource.matchAll(/id: '([^']+)'/g)].map((match) => match[1]);
+  assert.equal(serviceIds.length, 7);
+  for (const id of serviceIds) assert.ok(services.includes(`id="${id}"`), id);
+  assert.equal((services.match(/class="catalog-service"/g) || []).length, 6);
+  assert.match(services, /id="diagnostico"/);
+  assert.match(services, /href="\/#contacto"/);
 }
-
-function assertServicePages(output) {
-  const categories = [
-    'Auditoría financiera y tributaria',
-    'Outsourcing contable y financiero',
-    'Gestión laboral y administración de planillas',
-    'Implementación y optimización de procesos contables',
-    'Regularización contable y tributaria',
-    'Consultoría en sistemas de gestión contable (ERP)',
-    'Diagnóstico contable y tributario',
-  ];
-  for (const variant of [1, 2, 3]) {
-    const home = `/demo${variant}/`;
-    const html = readFileSync(join(output, home, 'servicios', 'index.html'), 'utf8');
-    assertSemanticDemo(html, output, false, variant === 1, 'services');
-    assertNotIndexable(html);
-    assertConfirmedBrand(html);
-    for (const category of categories) assert.ok(html.includes(`>${category}</h2>`), `Missing detailed service: ${category}`);
-    for (const id of ['auditoria', 'outsourcing', 'planillas', 'procesos', 'regularizacion', 'erp', 'diagnostico']) {
-      assert.match(html, new RegExp(`id="${id}"`));
-      assert.match(html, new RegExp(`href="#${id}"`));
-    }
-    assert.equal((html.match(/>Alcance del servicio<\/h3>/g) || []).length, 6);
-    assert.equal((html.match(/>Valor para tu empresa<\/h3>/g) || []).length, 6);
-    assert.match(html, /GRATUITO/);
-    assert.match(html, /Solicitar diagnóstico gratuito/);
-    assert.ok(html.includes(`href="${home}#contacto"`));
-    assert.ok(html.includes(`href="${home}"`));
-    assert.match(html, /T-Registro, PLAME/);
-    assert.match(html, /Diseñamos, implementamos, revisamos y mejoramos/);
-    assert.match(html, /Plan de acción con prioridades concretas/);
-    assert.match(html, new RegExp(`class="services-page service-demo${variant}"`));
-    assert.doesNotMatch(html, /Big ?Four|ISO 9001|garantizamos/i);
-    if (variant !== 1) assert.doesNotMatch(html, /href="tel:/);
-    if (variant === 1) assert.match(html, /href="mailto:jzavala@jjconsultores\.pe"/);
-    else assert.doesNotMatch(html, /href="mailto:|jzavala@jjconsultores\.pe/);
-    const landing = readFileSync(join(output, home, 'index.html'), 'utf8');
-    assert.ok(landing.includes(`href="${home}servicios/"`), `Home must link its own services page: ${home}`);
-  }
-  assertLocalDestinations(output);
-}
-
-function assertCarouselAndPreservation(output, compareMetadata = true) {
-  const demoOne = readFileSync(join(output, 'demo1/index.html'), 'utf8');
-  const section = demoOne.match(/<section class="clients-section"[^>]*>([\s\S]*?)<\/section>/)?.[1];
-  assert.ok(section);
-  assert.match(section, /data-client-carousel/);
-  assert.match(section, /class="logo-group logo-copy" aria-hidden="true"/);
-  const images = [...section.matchAll(/<img\b[^>]*>/g)].map((match) => match[0]);
-  assert.equal(images.length, 20);
-  for (const name of ['AQUARA', 'CMFC', 'DELPA', 'ECEL', 'HFP', 'MRTHREE', 'SANTOS', 'TRAIRE', 'VENMATIC', 'VIPE']) {
-    assert.equal(images.slice(0, 10).filter((image) => image.includes(`alt="${name}"`)).length, 1, `Client must be accessible once: ${name}`);
-    assert.equal(images.slice(10).filter((image) => image.includes(`alt="${name}"`)).length, 1, `Hidden copy must retain its client name: ${name}`);
-  }
-  for (const image of images) assert.match(image, /alt="[^"]+"/);
-  const copy = section.match(/<div class="logo-group logo-copy" aria-hidden="true"[^>]*>([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/)?.[1];
-  assert.equal((copy?.match(/<img\b/g) || []).length, 10, 'Exactly ten images must be hidden by the repeated-group wrapper');
-  const imageSources = (group) => group.map((image) => image.match(/src="([^"]+)"/)[1]);
-  assert.deepEqual(imageSources(images.slice(0, 10)), imageSources(images.slice(10)), 'Repeated groups must have identical logo order');
-  for (const image of images) assert.match(image, /width="150" height="65"/);
-  assert.doesNotMatch(normalizeVisibleBody(section), /<a\b|tabindex=|is-enabled/);
-  assert.doesNotMatch(section, /<button\b|role="button"|carousel-toggle|carousel-static-note/);
-  assert.match(section, /class="logo-viewport" role="region" aria-label="Logotipos de clientes"/);
-  assert.match(section, /id="client-logo-track-instructions"[^>]*hidden/);
-  assert.match(section, /Espacio: pausar o reanudar\. Esc: pausar\./);
-  const snapshot = join(root, '.astro/demo1-carousel-render-baseline.json');
-  const previous = existsSync(snapshot) ? JSON.parse(readFileSync(snapshot, 'utf8')) : null;
-  for (const route of ['root', 'demo1', 'demo2', 'demo3', 'demo1/servicios', 'demo2/servicios', 'demo3/servicios']) {
-    const current = readFileSync(join(output, route === 'root' ? 'index.html' : `${route}/index.html`), 'utf8');
-    if (route !== 'demo1') assert.doesNotMatch(current, /data-client-carousel|client-logo-track/);
-    if (previous) {
-      const normalize = (html) => route === 'demo1' ? normalizeDemoOneClients(normalizeVisibleBody(html)) : normalizeAboutIntegration(normalizeVisibleBody(html), route);
-      assert.equal(normalize(current), normalize(previous[route]), `Carousel changed content outside demo1 client row: ${route}`);
-      if (compareMetadata) {
-        const normalizeHead = (html) => html.match(/<head>([\s\S]*?)<\/head>/)[1]
-          .replace(/href="\/_astro\/[^\"]+\.css"/g, 'href="[compiled-css]"')
-          .replace(/<style\b[\s\S]*?<\/style>/g, '');
-        assert.equal(normalizeHead(current), normalizeHead(previous[route]), `Carousel changed metadata: ${route}`);
-      }
-    }
-  }
-}
-
-function assertAboutPage(output) {
-  const html = readFileSync(join(output, 'demo1/nosotros/index.html'), 'utf8');
-  assertSemanticDemo(html, output, false, true, 'about');
-  assertNotIndexable(html);
-  assertConfirmedBrand(html);
-  assert.match(html, /<title>Nosotros \| J&amp;J CONSULTORES Y AUDITORES<\/title>/);
-  assert.match(html, /href="\/demo1\/nosotros\/" aria-current="page"/);
-  assert.match(html, /Nuestra misión/);
-  assert.match(html, /Nuestra visión/);
-  assert.match(html, /Nuestros socios cuentan con 20 años de experiencia/);
-  assert.match(html, /Fotografía ilustrativa · No representa al equipo de la firma/);
-  for (const value of ['Integridad', 'Excelencia', 'Compromiso', 'Prevención', 'Confidencialidad', 'Cercanía', 'Innovación', 'Orientación a resultados']) {
-    assert.ok(html.includes(`>${value}</h3>`), `Missing official value: ${value}`);
-  }
-  for (const href of ['/demo1/', '/demo1/servicios/', '/demo1/#contacto', '/demo1/#metodologia', '/demo1/#preguntas']) {
-    assert.ok(html.includes(`href="${href}"`), `Missing institutional destination: ${href}`);
-  }
-  assert.doesNotMatch(html, /desde 20\d\d|fundad[ao] en|Big ?Four|ISO 9001|equipo certificado|clientes satisfechos/i);
-  const snapshot = join(root, '.astro/demo1-about-render-baseline.json');
-  if (existsSync(snapshot)) {
-    for (const [route, previous] of Object.entries(JSON.parse(readFileSync(snapshot, 'utf8')))) {
-      const current = readFileSync(join(output, route === 'root' ? 'index.html' : `${route}/index.html`), 'utf8');
-      const normalize = (html) => normalizeAboutIntegration(normalizeVisibleBody(html), route);
-      assert.equal(normalize(current), normalize(previous), `About page changed content outside authorized navigation/CTA: ${route}`);
-    }
-  }
-  const home = readFileSync(join(output, 'demo1/index.html'), 'utf8');
-  assert.equal((home.match(/href="\/demo1\/nosotros\/"/g) || []).length, 3, 'Demo1 header, summary and footer must link to Nosotros');
-}
-
-function assertConfirmedBrand(html) {
-  assert.match(html, /property="og:site_name" content="J&amp;J CONSULTORES Y AUDITORES"/);
-  assert.match(html, /<title>[^<]*J&amp;J CONSULTORES Y AUDITORES<\/title>/);
-  assert.match(html, /name="description" content="[^"]*J&amp;J CONSULTORES Y AUDITORES/);
-  assert.match(html, /href="\/jj-favicon.svg"/);
-  assert.equal((html.match(/aria-label="J&(?:amp;)?J CONSULTORES Y AUDITORES, inicio"/g) || []).length, 2, 'Header and footer must expose the full confirmed name');
-  assert.match(html, /class="jj-brand light"/);
-  assert.doesNotMatch(html, /Identidad (?:comercial )?provisional/);
-  assert.match(html, /Vista previa|vista previa/);
-  assert.match(html, /Datos de ejemplo|Contactos de ejemplo|Teléfono de ejemplo|Teléfono de contacto/);
-}
-
-function assertPortfolioAndHistoricalDefaults(demoTwo, demoThree) {
-  const portfolio = [
-    'Auditoría financiera y tributaria',
-    'Outsourcing contable y financiero',
-    'Gestión laboral y administración de planillas',
-    'Implementación y optimización de procesos contables',
-    'Regularización contable y tributaria',
-    'Consultoría en sistemas de gestión contable (ERP)',
-  ];
-  const headings = [...demoThree.matchAll(/<h3\b[^>]*>([^<]*)<\/h3>/g)].map((match) => match[1]);
-  for (const service of portfolio) assert.ok(headings.includes(service), `Missing service H3: ${service}`);
-  assert.ok(headings.includes('Diagnóstico contable y tributario'));
-  assert.match(demoThree, /GRATUITO/);
-  assert.match(demoThree, /href="\/demo3\/servicios\/"/);
-  assert.match(demoThree, /id="servicios"/);
-  assert.match(demoThree, /Diseñamos, implementamos y mejoramos procedimientos/);
-  assert.deepEqual(serviceOptions(demoThree), ['Selecciona un servicio', ...portfolio, 'Diagnóstico contable y tributario gratuito']);
-  assert.match(demoThree, /Conozcamos el contexto de tu empresa y definamos el alcance del servicio que necesitas\./);
-  assert.match(demoThree, /placeholder="Cuéntanos qué necesita tu organización"/);
-  assert.deepEqual(serviceOptions(demoTwo), [
-    'Selecciona una especialidad', 'Auditoría financiera', 'Auditoría tributaria',
-    'Control interno y procesos', 'Evaluación del alcance de auditoría',
-  ]);
-  for (const copy of [
-    'Especialidad de interés', 'Contexto del encargo', 'Conversemos sobre tu empresa',
-    'Una propuesta a la medida de tu organización.', 'Probar solicitud de propuesta',
-    'Formulario de vista previa. No envía ni guarda información.',
-    'Datos de ejemplo. Canales no habilitados en esta demostración.',
-    'Conozcamos el contexto de tu empresa y definamos el alcance de una evaluación independiente.',
-    'placeholder="Cuéntanos qué necesita evaluar tu organización"',
-    'Vista previa: la solicitud es válida. No se ha enviado ni guardado información.',
-  ]) assert.ok(demoTwo.includes(copy), `Historical contact copy changed: ${copy}`);
-  assert.doesNotMatch(demoTwo, /href="#servicios"|Outsourcing contable y financiero/);
-}
-
-test('service dark surfaces explicitly override global paragraph colors with accessible contrast', () => {
-  const source = readFileSync(join(root, 'src/components/ServicesPage.astro'), 'utf8');
-  assert.match(source, /\.service-demo2 \.sp-hero-copy > p \{ color: #e5e9ff; \}/);
-  assert.match(source, /\.sp-footer p \{[^}]*color: #d5dcf5;/);
-  const luminance = (hex) => {
-    const channels = hex.match(/[a-f\d]{2}/gi).map((channel) => parseInt(channel, 16) / 255);
-    const linear = channels.map((value) => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
-    return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
-  };
-  for (const [foreground, background] of [['e5e9ff', '0a1267'], ['d5dcf5', '080e45']]) {
-    const values = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
-    assert.ok((values[0] + 0.05) / (values[1] + 0.05) >= 4.5, 'Small paragraph contrast must pass WCAG AA');
-  }
-});
 
 test('preview is the safe default, even when only a domain is configured', () => {
   assert.deepEqual(resolveSite({}), { origin: undefined, indexable: false });
@@ -417,147 +164,53 @@ test('Astro build fails closed for an invalid public origin', () => {
   assert.match(`${result.stdout}\n${result.stderr}`, /SITE_URL must be an HTTP\(S\) origin/);
 });
 
-test('generated preview contains semantic content, local assets and safe demo interactions', () => {
-  const { output, html } = build('preview', {});
-  assert.match(html, /alt="Profesionales colaborando en una reunión de trabajo, fotografía ilustrativa"/);
-  assert.equal((html.match(/<h1\b/g) || []).length, 1);
-  assert.match(html, /<html lang="es-PE">/);
-  assert.match(html, /<meta name="robots" content="noindex, nofollow">/);
-  assert.doesNotMatch(html, /rel="canonical"|application\/ld\+json/);
+test('the primary site preserves all three selected pages and safe preview behavior', () => {
+  const { output } = build('preview', {});
+  const pages = readPages(output);
+  assertPageContent(pages, output);
+  for (const html of pages.values()) {
+    assert.match(html, /<meta name="robots" content="noindex, nofollow">/);
+    assert.doesNotMatch(html, /rel="canonical"|application\/ld\+json|property="og:url"|property="og:image"/);
+  }
   assert.equal(readFileSync(join(output, 'robots.txt'), 'utf8'), 'User-agent: *\nDisallow: /\n');
-  assert.ok(!existsSync(join(output, 'sitemap-index.xml')));
-  const ids = new Set([...html.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]));
-  assert.equal(ids.size, [...html.matchAll(/\bid="([^"]+)"/g)].length, 'IDs must be unique');
-  for (const match of html.matchAll(/href="#([^"]+)"/g)) assert.ok(ids.has(match[1]), `Missing anchor: ${match[1]}`);
-  for (const client of ['AQUARA', 'CMFC', 'DELPA', 'ECEL', 'HFP', 'MRTHREE', 'SANTOS', 'TRAIRE', 'VENMATIC', 'VIPE']) {
-    assert.match(html, new RegExp(`alt="${client}"`));
-  }
-  assert.equal((html.match(/class="client-logo"/g) || []).length, 10);
-  for (const match of html.matchAll(/<img\b[^>]*src="([^"]+)"[^>]*>/g)) {
-    assert.ok(match[1].startsWith('/_astro/'), 'Images must be local');
-    assert.ok(existsSync(join(output, match[1])), `Missing image: ${match[1]}`);
-    assert.match(match[0], /width="\d+"/);
-    assert.match(match[0], /height="\d+"/);
-    assert.match(match[0], /alt="[^"]+"/);
-  }
-  assert.match(html, /fetchpriority="high"/);
-  assert.ok(readdirSync(join(output, '_astro')).some((file) => file.endsWith('.woff2')));
-  assert.doesNotMatch(html, /https:\/\/(fonts\.googleapis|fonts\.gstatic|images\.unsplash)/);
-  assert.doesNotMatch(html, /jzavala@jjconsultores\.pe|href="(?:mailto:|tel:|https:\/\/wa\.me)/);
-  assert.match(html, /Datos de ejemplo/);
-  assert.match(html, /socios cuentan con 20 años de experiencia/);
-  assert.match(html, /<form[^>]+onsubmit="return false"/);
-  assert.match(html, /No envía ni guarda información/);
-  assert.match(html, /type="email"[^>]+required/);
-  assert.match(html, /role="status" aria-live="polite"/);
-  assert.equal((html.match(/<details>/g) || []).length, 5);
-  assert.match(html, /aria-controls="primary-navigation" aria-expanded="false"/);
-  assert.doesNotMatch(html, /localStorage|sessionStorage|fetch\(/);
-  const demoOne = readFileSync(join(output, 'demo1', 'index.html'), 'utf8');
-  const demoTwo = readFileSync(join(output, 'demo2', 'index.html'), 'utf8');
-  const demoThree = readFileSync(join(output, 'demo3', 'index.html'), 'utf8');
-  for (const [index, demo] of [demoOne, demoTwo, demoThree].entries()) {
-    assertSemanticDemo(demo, output, true, index === 0);
-    assertNotIndexable(demo);
-  }
-  assert.equal(normalizeDemoOneClients(normalizeVisibleMain(demoOne)), normalizeDemoOneClients(normalizeVisibleMain(html)), 'Root and demo1 must have identical main content except the authorized client row');
-  assert.match(demoTwo, /<title>Auditoría financiera y tributaria para empresas \| J&amp;J CONSULTORES Y AUDITORES<\/title>/);
-  assert.match(demoTwo, /PARA MEDIANAS Y GRANDES EMPRESAS/);
-  assert.match(demoTwo, /Una mirada independiente/);
-  assert.match(demoTwo, /Solicitar propuesta/);
-  assert.match(demoTwo, /Auditoría financiera/);
-  assert.match(demoTwo, /Auditoría tributaria/);
-  assert.match(demoTwo, /Control interno y procesos/);
-  assert.match(demoTwo, /socios cuentan con 20 años de experiencia/);
-  assert.match(demoTwo, /id="corporate-proposal-form"/);
-  assert.match(demoTwo, /aria-controls="corporate-navigation" aria-expanded="false"/);
-  assert.equal((demoTwo.match(/<details[^>]*>/g) || []).length, 3);
-  assert.doesNotMatch(demoTwo, /Big ?Four|NIIF|ISO 9001|clientes corporativos líderes/i);
-  assert.doesNotMatch(demoTwo, /class="hero-copy"|class="service-card"/);
-  assert.match(demoThree, /<title>Auditoría empresarial en Perú \| J&amp;J CONSULTORES Y AUDITORES<\/title>/);
-  assert.match(demoThree, /property="og:site_name" content="J&amp;J CONSULTORES Y AUDITORES"/);
-  assert.match(demoThree, /<link rel="icon" type="image\/svg\+xml" href="\/jj-favicon.svg"/);
-  assert.ok(existsSync(join(output, 'jj-favicon.svg')));
-  assert.match(demoThree, /Auditoría que aporta/);
-  assert.match(demoThree, /PARA MEDIANAS/);
-  assert.match(demoThree, /socios cuentan con 20 años de experiencia/);
-  assert.match(demoThree, /aria-controls="editorial-navigation" aria-expanded="false"/);
-  assert.match(demoThree, /data-editorial-reveal/);
-  assert.match(demoThree, /Ilustración de nuestro enfoque/);
-  assert.equal((demoThree.match(/<details[^>]*>/g) || []).length, 3);
-  assert.doesNotMatch(demoThree, /Identidad (?:comercial )?provisional|Big ?Four|NIIF|ISO 9001/i);
-  assert.doesNotMatch(demoThree, /class="c-hero"|class="hero-copy"/);
-  assertPortfolioAndHistoricalDefaults(demoTwo, demoThree);
-  const snapshotPath = join(root, '.astro', 'demo3-t4-render-baseline.json');
-  if (existsSync(snapshotPath)) {
-    const previous = JSON.parse(readFileSync(snapshotPath, 'utf8'));
-    for (const [route, current] of Object.entries({ root: html, demo1: demoOne, demo2: demoTwo })) {
-      if (route === 'root') assert.equal(normalizeVisibleBody(current), normalizeVisibleBody(previous[route]), 'Historical root changed');
-      else assert.equal(normalizePreservedMain(current, route), normalizePreservedMain(previous[route], route), `Historical demo main changed outside authorized client row: ${route}`);
-    }
-  }
-  for (const demo of [demoOne, demoTwo, demoThree]) assertConfirmedBrand(demo);
-  assert.match(html, /property="og:site_name" content="Auditores"/);
-  assert.match(html, /href="\/favicon.svg"/);
-  const brandSnapshotPath = join(root, '.astro', 'demo-branding-render-baseline.json');
-  if (existsSync(brandSnapshotPath)) {
-    const previous = JSON.parse(readFileSync(brandSnapshotPath, 'utf8'));
-    for (const [route, current] of Object.entries({ root: html, demo3: demoThree })) {
-      assert.equal(normalizeHistoricalHome(current, route), normalizeVisibleBody(previous[route]), `Unaffected rendered body changed outside authorized navigation: ${route}`);
-      assert.equal(current.match(/<title>(.*?)<\/title>/)?.[1], previous[route].match(/<title>(.*?)<\/title>/)?.[1]);
-    }
-    for (const [route, current] of Object.entries({ demo1: demoOne, demo2: demoTwo })) {
-      assert.equal(normalizePreservedMain(current, route), normalizePreservedMain(previous[route], route), `Branding changed service content outside authorized client row: ${route}`);
-    }
-  }
-  const servicesSnapshotPath = join(root, '.astro', 'demo-services-render-baseline.json');
-  if (existsSync(servicesSnapshotPath)) {
-    const previous = JSON.parse(readFileSync(servicesSnapshotPath, 'utf8'));
-    assert.equal(normalizeVisibleBody(html), normalizeVisibleBody(previous.root), 'Services changed root');
-    for (const [route, current] of Object.entries({ demo1: demoOne, demo2: demoTwo, demo3: demoThree })) {
-      assert.equal(normalizePreservedMain(current, route), normalizePreservedMain(previous[route], route), `Services changed home content or forms outside authorized client row: ${route}`);
-      assert.equal(normalizeHistoricalHome(current, route), normalizeHistoricalHome(previous[route], route), `Services changed home outside authorized navigation: ${route}`);
-    }
-  }
-  assertServicePages(output);
-  assertCarouselAndPreservation(output);
-  assertAboutPage(output);
+  assert.equal(existsSync(join(output, 'sitemap-index.xml')), false);
 });
 
-test('configured production emits matching canonical, social metadata, schema and sitemap', () => {
+test('launch-ready metadata gives each primary page its own canonical and shares the confirmed business identity', () => {
   const domain = 'https://firma.pe';
-  const { output, html } = build('production', { SITE_URL: domain, PUBLIC_LAUNCH_READY: 'true' });
-  assert.match(html, /<meta name="robots" content="index, follow">/);
-  assert.match(html, /<link rel="canonical" href="https:\/\/firma\.pe\/">/);
-  assert.match(html, /property="og:url" content="https:\/\/firma\.pe\/"/);
-  assert.match(html, /property="og:image" content="https:\/\/firma\.pe\/_astro\//);
-  const schemaText = html.match(/<script type="application\/ld\+json">(.*?)<\/script>/)?.[1];
-  assert.ok(schemaText);
-  const schema = JSON.parse(schemaText);
-  assert.equal(schema['@type'], 'ProfessionalService');
-  assert.equal(schema.url, `${domain}/`);
-  assert.equal(schema.hasOfferCatalog.itemListElement.length, 3);
-  assert.ok(!('telephone' in schema) && !('email' in schema) && !('address' in schema));
-  assert.doesNotMatch(schemaText, /example\.com|999 999/);
-  assert.match(readFileSync(join(output, 'robots.txt'), 'utf8'), /Allow: \/\nSitemap: https:\/\/firma\.pe\/sitemap-index\.xml/);
-  assert.match(readFileSync(join(output, 'sitemap-index.xml'), 'utf8'), /https:\/\/firma\.pe\/sitemap-0\.xml/);
-  const sitemap = readFileSync(join(output, 'sitemap-0.xml'), 'utf8');
-  assert.equal((sitemap.match(/<url>/g) || []).length, 1);
-  assert.match(sitemap, /<loc>https:\/\/firma\.pe\/<\/loc>/);
-  assert.doesNotMatch(sitemap, /demo1|demo2|demo3/);
-  for (const route of ['demo1', 'demo2', 'demo3']) {
-    const demo = readFileSync(join(output, route, 'index.html'), 'utf8');
-    assertSemanticDemo(demo, output, true, route === 'demo1');
-    assertNotIndexable(demo);
-    assert.doesNotMatch(demo, /property="og:image"|name="twitter:image"/);
-    assertConfirmedBrand(demo);
+  const { output } = build('production', { SITE_URL: domain, PUBLIC_LAUNCH_READY: 'true' });
+  const pages = readPages(output);
+  assertPageContent(pages, output);
+  for (const [path, html] of pages) {
+    assert.match(html, /<meta name="robots" content="index, follow">/);
+    assert.ok(html.includes(`<link rel="canonical" href="${domain}${path}">`));
+    assert.ok(html.includes(`property="og:url" content="${domain}${path}"`));
+    assert.match(html, /property="og:image" content="https:\/\/firma\.pe\/_astro\//);
+    const schema = JSON.parse(html.match(/<script type="application\/ld\+json">(.*?)<\/script>/)?.[1]);
+    assert.equal(schema['@type'], 'ProfessionalService');
+    assert.equal(schema['@id'], `${domain}/#business`);
+    assert.equal(schema.url, `${domain}/`);
+    assert.equal(schema.name, 'J&J CONSULTORES Y AUDITORES');
+    assert.equal(schema.email, email);
+    assert.equal(schema.telephone, phone);
+    assert.equal(schema.hasOfferCatalog.itemListElement.length, 3);
+    assert.equal('address' in schema, false);
   }
-  assertPortfolioAndHistoricalDefaults(
-    readFileSync(join(output, 'demo2', 'index.html'), 'utf8'),
-    readFileSync(join(output, 'demo3', 'index.html'), 'utf8'),
-  );
-  assertServicePages(output);
-  // Preview snapshots have no production SEO; body-only preservation remains identical.
-  assertCarouselAndPreservation(output, false);
-  assertAboutPage(output);
+  assert.match(readFileSync(join(output, 'robots.txt'), 'utf8'), /Allow: \/\nSitemap: https:\/\/firma\.pe\/sitemap-index\.xml/);
+  const sitemap = readFileSync(join(output, 'sitemap-0.xml'), 'utf8');
+  assert.deepEqual([...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map((match) => match[1]).sort(), pagePaths.map((path) => `${domain}${path}`).sort());
+  assert.doesNotMatch(sitemap, /demo[123]/);
+});
+
+test('approval packaging exports only the three generated pages and cannot inherit launch indexing', async () => {
+  const result = spawnSync(process.execPath, [join(root, 'scripts/package-pages-preview.mjs')], {
+    cwd: root, env: { ...process.env, SITE_URL: 'https://firma.pe', PUBLIC_LAUNCH_READY: 'true' }, encoding: 'utf8', timeout: 120_000,
+  });
+  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+  const report = await validatePayload(packageOutput);
+  assert.deepEqual(report.files.filter((name) => name.endsWith('.html')), [...routes].sort());
+  assert.ok(report.files.includes('.nojekyll'));
+  const home = readFileSync(join(packageOutput, 'index.html'), 'utf8');
+  assert.match(home, /href="\/auditores-preview\/nosotros\/"/);
+  assert.match(home, /href="\/auditores-preview\/servicios\/"/);
 });

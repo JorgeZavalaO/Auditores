@@ -1,11 +1,8 @@
 ---
 import Icon from './Icon.astro';
 import { company, featuredServices, supportingServices } from '../data/site';
-import { demo1ContactEmail, demo1ContactPhone } from '../data/demo1';
-const isDemoOne = Astro.url.pathname.startsWith('/demo1/');
-const email = isDemoOne ? demo1ContactEmail : company.email;
-const phone = isDemoOne ? demo1ContactPhone : company.phone;
-const emailIsExample = !isDemoOne;
+const email = company.email;
+const phone = company.phone;
 ---
 <section id="contacto" class="contact-section section-space">
   <div class="container contact-grid">
@@ -14,10 +11,9 @@ const emailIsExample = !isDemoOne;
       <h2>El primer paso hacia una gestión más clara.</h2>
       <p>Cuéntanos qué necesita tu empresa. Comencemos con un diagnóstico contable y tributario gratuito.</p>
       <div class="contact-details">
-        <div><span class="contact-icon"><Icon name="phone" /></span><div><small>{isDemoOne ? 'Teléfono de contacto' : 'Teléfono / WhatsApp'}</small>{isDemoOne ? <a class="contact-phone" href={`tel:${phone.replace(/\s/g, '')}`}><strong>{phone}</strong></a> : <strong>{phone}</strong>}</div></div>
-        <div><span class="contact-icon"><Icon name="mail" /></span><div><small>Correo electrónico</small>{emailIsExample ? <strong>{email}</strong> : <a class="contact-email" href={`mailto:${email}`}><strong>{email}</strong></a>}</div></div>
+        <div><span class="contact-icon"><Icon name="phone" /></span><div><small>Teléfono de contacto</small><a class="contact-phone" href={`tel:${phone.replace(/\s/g, '')}`}><strong>{phone}</strong></a></div></div>
+        <div><span class="contact-icon"><Icon name="mail" /></span><div><small>Correo electrónico</small><a class="contact-email" href={`mailto:${email}`}><strong>{email}</strong></a></div></div>
       </div>
-      <span class="contact-example">{emailIsExample ? 'Datos de ejemplo · se reemplazarán antes de publicar.' : 'Teléfono y correo de contacto proporcionados.'}</span>
       <div class="contact-note"><Icon name="shield" /><span>La confidencialidad y el trato cercano son parte de nuestra forma de trabajar.</span></div>
     </div>
     <div class="form-panel">
