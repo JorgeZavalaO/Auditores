@@ -84,7 +84,8 @@ export function createWorker(fetcher = globalThis.fetch) {
       const challenge = await verification.json();
       if (challenge.success !== true || challenge.hostname !== origin.hostname || challenge.action !== 'contact') return reply(403, 'verification');
       const { name, company, email, service, message, requestId } = data;
-      const payload = { from: env.RESEND_FROM, to: ['jzavala@jjconsultores.pe'], reply_to: email,
+      const payload = { from: env.RESEND_FROM,
+        to: ['jzavala@jjconsultores.pe', 'contador44@hotmail.com', 'jzavalaolivares@gmail.com'], reply_to: email,
         subject: 'Nueva consulta desde la web de J&J',
         text: `Nombre: ${name}\nEmpresa: ${company}\nCorreo: ${email}\nServicio: ${service}\n\n${message}` };
       const result = await fetcher('https://api.resend.com/emails', {

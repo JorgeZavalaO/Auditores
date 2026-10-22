@@ -18,7 +18,7 @@ After deployment, a GET to `/api/contact` should return JSON with status405 (POS
 
 - Add a sending domain/subdomain in Resend and add the exact DNS records it issues. Do not overwrite existing mailbox MX or SPF records. Review SPF, DKIM and aligned DMARC with the mailbox administrator before enforcement changes. An example sender is not proof of a verified or existing mailbox.
 - Create a production Turnstile widget limited to the approved website hostname. The server requires a successful verification for that hostname and the `contact` action; expired/reused tokens are rejected. Keep development/test keys separate from production.
-- The recipient is fixed to `jzavala@jjconsultores.pe`; the visitor's validated address is only `Reply-To`. No autoresponder or visitor-selected destination exists. Confirm that the destination mailbox can receive messages independently.
+- The fixed recipients are `jzavala@jjconsultores.pe`, `contador44@hotmail.com` and `jzavalaolivares@gmail.com`; each accepted submission is addressed to all three using `to`. The visitor's validated address is only `Reply-To`. No autoresponder or visitor-selected destination exists. Confirm that all three destination mailboxes can receive messages independently. The two additional addresses do not replace the public website contact address.
 - Review and approve the privacy notice and any required privacy-policy link before launch. The displayed short notice is not a legal compliance certification. Cloudflare processes verification data/IP; Resend processes email contents and may retain delivery records under its settings and terms. The Worker adds no database, submission logs or browser storage.
 
 ## Enable only after an authorized staging test

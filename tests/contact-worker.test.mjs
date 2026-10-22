@@ -28,7 +28,7 @@ function fixture() {
   return { env, worker, data, request, calls, limits };
 }
 
-test('accepted request verifies Turnstile then sends fixed destination and safe Reply-To', async () => {
+test('accepted request verifies Turnstile then sends all three fixed recipients and safe Reply-To', async () => {
   const f = fixture();
   const response = await f.worker.fetch(f.request(), f.env);
   assert.equal(response.status, 200);
@@ -37,7 +37,7 @@ test('accepted request verifies Turnstile then sends fixed destination and safe 
   assert.equal(f.calls.length, 2);
   assert.equal(f.calls[0].body.secret, f.env.TURNSTILE_SECRET_KEY);
   assert.equal(f.calls[1].url, 'https://api.resend.com/emails');
-  assert.deepEqual(f.calls[1].body.to, ['jzavala@jjconsultores.pe']);
+  assert.deepEqual(f.calls[1].body.to, ['jzavala@jjconsultores.pe', 'contador44@hotmail.com', 'jzavalaolivares@gmail.com']);
   assert.equal(f.calls[1].body.from, f.env.RESEND_FROM);
   assert.equal(f.calls[1].body.reply_to, f.data.email);
   assert.ok(f.calls[1].body.text.includes(f.data.message));
