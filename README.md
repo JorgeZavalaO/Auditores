@@ -44,7 +44,7 @@ The supplied Word, reference image, original logos and photographs remain unchan
 
 The public channels are `jzavala@jjconsultores.pe` and `+51 956 481 871`, with working email and telephone links throughout the three-page site.
 
-**The contact form does not send or store information.** Its notice, native validation and local preview confirmation remain visible. No delivery endpoint, analytics, storage or false success message was added. Before launch, configure and verify server-side form delivery, input validation, spam protection and the corresponding privacy information. Keep the preview disclosure until that work is complete.
+**Contact delivery is disabled by default.** Default builds and generated approval packages retain the non-sending preview. An opt-in integration keeps Astro static and uses `worker/contact.mjs` for `/api/contact`, Cloudflare Turnstile verification and Resend delivery. No production accounts or DNS have been configured or verified by these source changes. Follow [the activation guide](docs/contact-delivery.md) before enabling it.
 
 ## Client-logo carousel
 

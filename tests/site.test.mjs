@@ -17,7 +17,7 @@ function build(name, environment) {
   const output = join(root, '.astro', 'test-builds', name);
   const result = spawnSync(process.execPath, [cli, 'build', '--outDir', output], {
     cwd: root,
-    env: { ...process.env, SITE_URL: '', PUBLIC_LAUNCH_READY: 'false', ...environment },
+    env: { ...process.env, SITE_URL: '', PUBLIC_LAUNCH_READY: 'false', PUBLIC_CONTACT_ENABLED: 'false', PUBLIC_TURNSTILE_SITE_KEY: '', ...environment },
     encoding: 'utf8', timeout: 120_000,
   });
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
@@ -204,7 +204,7 @@ test('launch-ready metadata gives each primary page its own canonical and shares
 
 test('approval packaging exports only the three generated pages and cannot inherit launch indexing', async () => {
   const result = spawnSync(process.execPath, [join(root, 'scripts/package-pages-preview.mjs')], {
-    cwd: root, env: { ...process.env, SITE_URL: 'https://firma.pe', PUBLIC_LAUNCH_READY: 'true' }, encoding: 'utf8', timeout: 120_000,
+    cwd: root, env: { ...process.env, SITE_URL: 'https://firma.pe', PUBLIC_LAUNCH_READY: 'true', PUBLIC_CONTACT_ENABLED: 'true', PUBLIC_TURNSTILE_SITE_KEY: 'public-test-sitekey', RESEND_API_KEY: 'private-test-sentinel' }, encoding: 'utf8', timeout: 120_000,
   });
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
   const report = await validatePayload(packageOutput);
@@ -213,4 +213,19 @@ test('approval packaging exports only the three generated pages and cannot inher
   const home = readFileSync(join(packageOutput, 'index.html'), 'utf8');
   assert.match(home, /href="\/auditores-preview\/nosotros\/"/);
   assert.match(home, /href="\/auditores-preview\/servicios\/"/);
+  assert.doesNotMatch(home, /data-contact-mode="live"|challenges.cloudflare|private-test-sentinel/);
+});
+
+test('contact delivery is opt-in and emits no server credentials in enabled output', () => {
+  const { output, html } = build('contact-enabled', { PUBLIC_CONTACT_ENABLED: 'true',
+    PUBLIC_TURNSTILE_SITE_KEY: 'public-test-sitekey', RESEND_API_KEY: 'private-test-sentinel' });
+  assert.deepEqual(htmlFiles(output), ['index.html', 'nosotros/index.html', 'servicios/index.html']);
+  assert.match(html, /data-contact-mode="live"/);
+  assert.match(html, /data-sitekey="public-test-sitekey"/);
+  assert.match(html, /challenges.cloudflare.com\/turnstile/);
+  assert.match(html, /fetch\('\/api\/contact'/);
+  assert.doesNotMatch(html, /private-test-sentinel|onsubmit="return false"/);
+  const partial = build('contact-incomplete', { PUBLIC_CONTACT_ENABLED: 'true' }).html;
+  assert.match(partial, /data-contact-mode="preview"/);
+  assert.doesNotMatch(partial, /challenges.cloudflare|fetch\('/);
 });

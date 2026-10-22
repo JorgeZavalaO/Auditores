@@ -1,8 +1,12 @@
 ---
 import Icon from './Icon.astro';
-import { company, featuredServices, supportingServices } from '../data/site';
+import { company } from '../data/site';
+import { contactServices } from '../data/contact-options.mjs';
+import contactScript from '../scripts/contact-form.js?raw';
 const email = company.email;
 const phone = company.phone;
+const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY?.trim();
+const enabled = import.meta.env.PUBLIC_CONTACT_ENABLED === 'true' && Boolean(sitekey);
 ---
 <section id="contacto" class="contact-section section-space">
   <div class="container contact-grid">
@@ -18,8 +22,8 @@ const phone = company.phone;
     </div>
     <div class="form-panel">
       <div class="form-heading"><h3>Hablemos de tu empresa</h3><span>Diagnóstico gratuito</span></div>
-      <p id="preview-notice" class="preview-notice">Formulario de vista previa. No envía ni guarda información.</p>
-      <form id="diagnostic-form" aria-describedby="preview-notice" onsubmit="return false">
+      <p id="preview-notice" class="preview-notice">{enabled ? 'Usaremos sus datos para responder a su consulta, mediante Cloudflare y Resend. No incluya documentos ni información financiera confidencial.' : 'Formulario de vista previa. No envía ni guarda información.'}</p>
+      <form id="diagnostic-form" aria-describedby="preview-notice" onsubmit={enabled ? undefined : 'return false'} data-contact-mode={enabled ? 'live' : 'preview'} data-sitekey={enabled ? sitekey : undefined}>
         <div class="form-row">
           <label>Nombre completo <input name="name" type="text" autocomplete="name" placeholder="Tu nombre" required maxlength="100" /></label>
           <label>Empresa <input name="company" type="text" autocomplete="organization" placeholder="Nombre de tu empresa" required maxlength="150" /></label>
@@ -28,23 +32,30 @@ const phone = company.phone;
         <label>¿En qué podemos ayudarte?
           <select name="service" required>
             <option value="">Selecciona un servicio</option>
-            <option>Diagnóstico contable y tributario gratuito</option>
-            {featuredServices.map((service) => <option>{service.title}</option>)}
-            {supportingServices.map((service) => <option>{service.title}</option>)}
+            {contactServices.map((service) => <option>{service}</option>)}
           </select>
         </label>
         <label>Cuéntanos un poco más <textarea name="message" rows="3" placeholder="¿Qué te gustaría revisar o mejorar?" maxlength="2000"></textarea></label>
-        <button class="button form-submit" type="submit">Probar solicitud de diagnóstico <Icon /></button>
+        {enabled && <>
+          <div class="contact-trap" aria-hidden="true"><label>Sitio web <input type="text" name="website" tabindex="-1" autocomplete="off" /></label></div>
+          <div id="contact-verification"></div>
+        </>}
+        <button class="button form-submit" type="submit" disabled={enabled}>{enabled ? 'Enviar solicitud de diagnóstico' : 'Probar solicitud de diagnóstico'} <Icon /></button>
         <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
-        <noscript><p class="preview-notice">La demostración necesita JavaScript. Esta vista previa no envía tus datos.</p></noscript>
+        <noscript><p class="preview-notice">{enabled ? 'Para enviar el formulario active JavaScript o escriba directamente al correo de contacto.' : 'La demostración necesita JavaScript. Esta vista previa no envía tus datos.'}</p></noscript>
       </form>
     </div>
   </div>
 </section>
+{enabled && <>
+  <script is:inline set:html={contactScript}></script>
+  <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=jjContactReady&render=explicit" async defer></script>
+</>}
 <script>
   const form = document.querySelector<HTMLFormElement>('#diagnostic-form');
   const status = document.querySelector<HTMLElement>('#form-status');
   form?.addEventListener('submit', (event) => {
+    if (form.dataset.contactMode === 'live') return;
     event.preventDefault();
     if (!form.reportValidity()) return;
     if (status) status.textContent = 'Vista previa: el formulario es válido. No se ha enviado ni guardado información. Conecta un servicio de formularios para recibir solicitudes.';
@@ -53,4 +64,7 @@ const phone = company.phone;
 <style>
   .contact-email, .contact-phone { color: inherit; text-decoration: none; }
   .contact-email:focus-visible, .contact-phone:focus-visible { outline: 2px solid #0a1267; outline-offset: 3px; }
+  .contact-trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+  #contact-verification { min-height: 65px; margin-block: 15px; }
+  .form-submit:disabled { opacity: .6; cursor: not-allowed; }
 </style>

@@ -1,0 +1,13 @@
+{
+  // Merge into the existing Worker's configuration; do not deploy this placeholder name.
+  "name": "replace-with-existing-worker-name",
+  "main": "worker/contact.mjs",
+  "compatibility_date": "2026-10-22",
+  "assets": { "directory": "./dist", "binding": "ASSETS", "run_worker_first": ["/api/*"] },
+  "vars": { "CONTACT_ENABLED": "false", "CONTACT_ORIGIN": "https://replace-with-approved-domain.invalid", "RESEND_FROM": "" },
+  // Allocate two unused account namespace IDs before production. Counters are per Cloudflare location.
+  "ratelimits": [
+    { "name": "CONTACT_IP_LIMITER", "namespace_id": "1001", "simple": { "limit": 3, "period": 60 } },
+    { "name": "CONTACT_GLOBAL_LIMITER", "namespace_id": "1002", "simple": { "limit": 30, "period": 60 } }
+  ]
+}

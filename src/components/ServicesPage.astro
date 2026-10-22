@@ -43,7 +43,7 @@ const content = {
           <div class="sp-detail"><ServiceCatalog home={home} /></div>
         </div>
       </section>
-      <section class="sp-next"><div class="sp-container"><div><span class="sp-eyebrow">EL SIGUIENTE PASO</span><h2>Una conversación para entender lo que necesitas.</h2><p>Cuéntanos sobre tu empresa y el servicio de interés. El formulario de contacto es una vista previa: no envía ni guarda información.</p></div><a class="sp-button" href={`${home}#contacto`}>{content.contact}<Icon /></a></div></section>
+      <section class="sp-next"><div class="sp-container"><div><span class="sp-eyebrow">EL SIGUIENTE PASO</span><h2>Una conversación para entender lo que necesitas.</h2><p>Cuéntanos sobre tu empresa y el servicio de interés. Encuentra el formulario y nuestros canales de atención en la sección de contacto.</p></div><a class="sp-button" href={`${home}#contacto`}>{content.contact}<Icon /></a></div></section>
     </main>
     <footer class="sp-footer"><div class="sp-container sp-footer-top"><JJBrand light href={home} /><p>Criterio profesional.<br />Acompañamiento cercano.</p><a href={home}>Volver a la página principal <Icon /></a></div><div class="sp-container sp-example"><span>Correo de contacto</span><a class="sp-email" href={`mailto:${contactEmail}`}>{contactEmail}</a><span>Teléfono de contacto</span><a class="sp-phone" href={`tel:${contactPhone.replace(/\s/g, '')}`}>{contactPhone}</a></div><div class="sp-container sp-footer-bottom"><span>© {new Date().getFullYear()} {company.legalName}</span><span>Consultoría empresarial · Perú</span></div></footer>
   </div>
