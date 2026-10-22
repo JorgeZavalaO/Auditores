@@ -216,7 +216,7 @@ test('approval packaging exports only the three generated pages and cannot inher
   assert.doesNotMatch(home, /data-contact-mode="live"|challenges.cloudflare|private-test-sentinel/);
 });
 
-test('contact delivery is opt-in and emits no server credentials in enabled output', () => {
+test('contact delivery requires a public key and emits no server credentials in enabled output', () => {
   const { output, html } = build('contact-enabled', { PUBLIC_CONTACT_ENABLED: 'true',
     PUBLIC_TURNSTILE_SITE_KEY: 'public-test-sitekey', RESEND_API_KEY: 'private-test-sentinel' });
   assert.deepEqual(htmlFiles(output), ['index.html', 'nosotros/index.html', 'servicios/index.html']);
@@ -228,4 +228,18 @@ test('contact delivery is opt-in and emits no server credentials in enabled outp
   const partial = build('contact-incomplete', { PUBLIC_CONTACT_ENABLED: 'true' }).html;
   assert.match(partial, /data-contact-mode="preview"/);
   assert.doesNotMatch(partial, /challenges.cloudflare|fetch\('/);
+});
+
+test('a configured public key enables the approved form unless explicitly disabled', () => {
+  const enabled = build('contact-default-enabled', { PUBLIC_CONTACT_ENABLED: '',
+    PUBLIC_TURNSTILE_SITE_KEY: 'public-test-sitekey' }).html;
+  assert.match(enabled, /data-contact-mode="live"/);
+  assert.match(enabled, /data-sitekey="public-test-sitekey"/);
+  assert.match(enabled, /challenges.cloudflare.com\/turnstile/);
+  const disabled = build('contact-explicit-disabled', { PUBLIC_CONTACT_ENABLED: 'false',
+    PUBLIC_TURNSTILE_SITE_KEY: 'public-test-sitekey' }).html;
+  assert.match(disabled, /data-contact-mode="preview"/);
+  assert.doesNotMatch(disabled, /challenges.cloudflare|fetch\('/);
+  const missing = build('contact-default-no-key', { PUBLIC_CONTACT_ENABLED: '' }).html;
+  assert.match(missing, /data-contact-mode="preview"/);
 });

@@ -17,10 +17,10 @@ test('the active configuration targets the existing Worker and its contact handl
   assert.equal(config.workers_dev, false);
 });
 
-test('publishing the handler does not enable email or embed runtime credentials', () => {
+test('the approved contact configuration enables delivery without embedding credentials', () => {
   assert.equal(config.keep_vars, true);
-  assert.deepEqual(config.vars, { CONTACT_ENABLED: 'false', CONTACT_ORIGIN: 'https://jjconsultores.pe' });
-  assert.equal(config.vars.RESEND_FROM, undefined);
+  assert.deepEqual(config.vars, { CONTACT_ENABLED: 'true', CONTACT_ORIGIN: 'https://jjconsultores.pe',
+    RESEND_FROM: 'jzavala@jjconsultores.pe' });
   for (const name of ['RESEND_API_KEY', 'TURNSTILE_SECRET_KEY', 'PUBLIC_TURNSTILE_SITE_KEY']) {
     assert.equal(JSON.stringify(config).includes(name), false);
   }

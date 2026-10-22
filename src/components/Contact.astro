@@ -6,7 +6,7 @@ import contactScript from '../scripts/contact-form.js?raw';
 const email = company.email;
 const phone = company.phone;
 const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY?.trim();
-const enabled = import.meta.env.PUBLIC_CONTACT_ENABLED === 'true' && Boolean(sitekey);
+const enabled = import.meta.env.PUBLIC_CONTACT_ENABLED !== 'false' && Boolean(sitekey);
 ---
 <section id="contacto" class="contact-section section-space">
   <div class="container contact-grid">
