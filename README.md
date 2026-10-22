@@ -44,7 +44,7 @@ The supplied Word, reference image, original logos and photographs remain unchan
 
 The public channels are `jzavala@jjconsultores.pe` and `+51 956 481 871`, with working email and telephone links throughout the three-page site.
 
-**Contact delivery is disabled by default.** Default builds and generated approval packages retain the non-sending preview. An opt-in integration keeps Astro static and uses `worker/contact.mjs` for `/api/contact`, Cloudflare Turnstile verification and Resend delivery. No production accounts or DNS have been configured or verified by these source changes. Follow [the activation guide](docs/contact-delivery.md) before enabling it.
+**Contact delivery is disabled by default.** Default builds and generated approval packages retain the non-sending preview. An opt-in integration keeps Astro static and uses `worker/contact.mjs` for `/api/contact`, Cloudflare Turnstile verification and Resend delivery. The active `wrangler.jsonc` targets the existing `auditores` Worker and preserves dashboard-managed custom domains; it publishes the handler with email disabled. No provider accounts, DNS or inbox delivery have been configured or verified by these source changes. Follow [the activation guide](docs/contact-delivery.md) before enabling it.
 
 ## Client-logo carousel
 

@@ -1,16 +1,18 @@
 # Activate protected contact delivery
 
-The local implementation is ready for configuration, not proof of production delivery. Keep both contact switches off until the existing Worker, domain, provider and privacy information have been verified. No deployment or real email is performed by the tests.
+The repository now has an active `wrangler.jsonc` for the existing Worker `auditores`. It publishes the contact handler and static pages but deliberately keeps email delivery off. This is not proof of provider authentication or inbox delivery. No real email is performed by the tests.
 
 ## Configure the existing Worker
 
-1. Back up the deployed Worker configuration. The repository did not previously declare its name, routes or build command. **Do not deploy the placeholder example as a new Worker or replace existing routes blindly.**
-2. Merge `wrangler.contact.example.jsonc` into that configuration: `main` is `worker/contact.mjs`, assets are `./dist` with binding `ASSETS`, and `/api/*` runs the Worker first. Preserve the existing Worker name, domain and other bindings. The GitHub build remains `npm run build`. Deploying must publish both the Worker script and assets, not assets alone.
-3. Allocate two unused rate-limit namespace IDs in the account. Suggested initial limits: 3 requests per minute per IP and 30 per minute for the form, via `CONTACT_IP_LIMITER` and `CONTACT_GLOBAL_LIMITER`. Cloudflare counters are approximate and per location, **not hard global/daily quotas**. Tune after observing legitimate usage; configure provider limits/alerts separately.
-4. Set runtime `CONTACT_ORIGIN` to the exact approved HTTPS origin without a trailing slash. Set `RESEND_FROM` to an authorized single email address under `jjconsultores.pe` or its verified sending subdomain. Keep `CONTACT_ENABLED=false` initially.
-5. Store `RESEND_API_KEY` and `TURNSTILE_SECRET_KEY` as encrypted Worker secrets. Never put them in GitHub source, `PUBLIC_` variables, chat, screenshots or client code. Use a sending-only Resend key scoped to the verified domain.
+1. Keep the existing GitHub commands: build `npm run build`, deploy `npx wrangler deploy`. The active configuration targets `auditores`, runs `worker/contact.mjs` for `/api/*` and serves `./dist` through `ASSETS`. Do not deploy the separate placeholder example.
+2. Custom domains/routes remain dashboard-managed; no DNS or route definitions are added. `workers_dev=false` avoids exposing an additional direct workers.dev endpoint. `keep_vars=true` preserves dashboard runtime variables not explicitly declared in source, and encrypted secrets are not deleted by deployments.
+3. The configuration declares two rate-limit namespaces, `2026102201` (per IP) and `2026102202` (shared), reserved here for this form. Their uniqueness across unrelated Workers in the account was not inspected; do not reuse these IDs elsewhere. Initial limits are 3 and 30 requests per minute respectively. Counters are approximate and per location, **not hard global/daily quotas**. Tune after observing legitimate usage; configure provider limits/alerts separately.
+4. The source declares runtime `CONTACT_ORIGIN=https://jjconsultores.pe` and `CONTACT_ENABLED=false`. Set dashboard runtime `RESEND_FROM` to an authorized single email address under `jjconsultores.pe` or its verified sending subdomain; no sender is invented in source.
+5. Revoke/rotate any credentials previously exposed in screenshots. Remove the old values from Build settings. Store replacement `RESEND_API_KEY` and `TURNSTILE_SECRET_KEY` under the Worker's **Settings > Variables and Secrets**, type **Secret**, not Build variables. Never put secret values in GitHub source, `PUBLIC_` variables, chat, screenshots or client code. Use a sending-only Resend key scoped to the verified domain.
 
-No SDK, adapter, database, dependency installation, provider account or remote resource is automatically added. The example intentionally is not named `wrangler.jsonc`, so a connected GitHub deployment cannot silently adopt it. Local `npm run dev` previews Astro only; actual endpoint verification requires a Worker runtime. Wrangler must support the `ratelimits` configuration (4.36.0+).
+No SDK, adapter, database or provider account is added. The authorized connected-branch deployment will adopt `wrangler.jsonc` and attach its rate-limit bindings to the existing Worker. Local `npm run dev` previews Astro only; endpoint verification requires a Worker runtime. Wrangler must support `ratelimits` (4.36.0+).
+
+After deployment, a GET to `/api/contact` should return JSON with status405 (POST required), rather than the previous404. With the source kill switch off, POST returns503 without contacting Turnstile or Resend. These checks demonstrate routing and the kill switch only, not email readiness.
 
 ## Verify Resend and Turnstile
 
@@ -22,12 +24,12 @@ No SDK, adapter, database, dependency installation, provider account or remote r
 ## Enable only after an authorized staging test
 
 1. Set build variables `PUBLIC_CONTACT_ENABLED=true` and `PUBLIC_TURNSTILE_SITE_KEY` to the public widget key. These are separate from runtime secrets and from SEO's `PUBLIC_LAUNCH_READY` flag. Public form HTML is generated at build time; changing runtime variables alone cannot enable it.
-2. Set runtime `CONTACT_ENABLED=true`. Missing secrets, bindings, valid sender or exact origin fail closed. A missing build key retains preview mode. A blocked verification script leaves the button disabled and the direct email link available.
+2. Only after replacement secrets, valid sender and bindings are verified, change `CONTACT_ENABLED` to `true` in the active Wrangler source and deploy that reviewed change. A dashboard-only edit to this explicitly declared variable is overwritten by the next source deployment. Missing configuration fails closed. A missing build key retains preview mode; a blocked verification script leaves the button disabled and the direct email link available.
 3. Rebuild and deploy through the approved existing integration. Verify in a staging Worker first with separately configured hostname/origin/widget. Do not enable production from an unreviewed branch push.
 4. Submit one authorized test and check Resend acceptance, its delivery/bounce status, the destination inbox/spam folder and Reply-To. Then test bad/expired verification, limits, provider rejection and an unavailable network. The UI reports **accepted for sending**, never guaranteed inbox delivery. Failed/uncertain responses preserve the fields and retain the submission identity for a retry; Resend deduplicates the same payload/key for 24 hours.
 5. Confirm `/`, `/nosotros/` and `/servicios/` still serve normally, `/demo1/` remains absent, and no secrets are in HTML/JS. Check a mobile device and keyboard navigation. If CSP is configured remotely, allow the documented Turnstile script/frame/connect sources; do not disable CSP wholesale.
 
-Rollback: turn runtime `CONTACT_ENABLED=false` immediately, then rebuild with `PUBLIC_CONTACT_ENABLED=false` to restore the preview UI. No data migration or DNS removal is needed. Existing direct email/telephone links remain available.
+Rollback: turn dashboard runtime `CONTACT_ENABLED=false` immediately and keep the source value false, then rebuild with `PUBLIC_CONTACT_ENABLED=false` to restore the preview UI. No data migration or DNS removal is needed. Existing direct email/telephone links remain available.
 
 ## Local checks and limits
 
