@@ -72,6 +72,10 @@ Preview remains the default: `noindex, nofollow`, `robots.txt` with `Disallow: /
 
 The launch flag does not prove domain ownership, verify business facts or send form messages. Robots directives are not access control. No deployment, domain provisioning or Search Console action is implied by local route changes.
 
+For the approved production site, set `SITE_URL=https://jjconsultores.pe` and `PUBLIC_LAUNCH_READY=true` in **Cloudflare > auditores > Settings > Build > Variables and secrets**, not runtime settings, then rebuild/deploy the connected branch. Verify all three pages emit `index, follow` and self-canonicals, `robots.txt` allows crawling and references `/sitemap-index.xml`, and `/sitemap-0.xml` lists exactly the three primary canonical URLs. Keep approval previews non-indexable.
+
+`public/llms.txt` publishes a concise Spanish directory of the firm, its three pages, services and public contact details at `/llms.txt`. Keep it aligned with the website when those details change. It is an optional discovery aid, not a crawler permission file or a guarantee of Google/AI indexing. Sitemap submission and URL inspection in Google Search Console are separate follow-up actions requiring account authorization.
+
 ## Generated approval package
 
 ```sh

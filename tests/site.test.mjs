@@ -200,6 +200,7 @@ test('launch-ready metadata gives each primary page its own canonical and shares
   const sitemap = readFileSync(join(output, 'sitemap-0.xml'), 'utf8');
   assert.deepEqual([...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map((match) => match[1]).sort(), pagePaths.map((path) => `${domain}${path}`).sort());
   assert.doesNotMatch(sitemap, /demo[123]/);
+  assert.deepEqual(readFileSync(join(output, 'llms.txt')), readFileSync(join(root, 'public', 'llms.txt')));
 });
 
 test('approval packaging exports only the three generated pages and cannot inherit launch indexing', async () => {
@@ -208,6 +209,7 @@ test('approval packaging exports only the three generated pages and cannot inher
   });
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
   const report = await validatePayload(packageOutput);
+  assert.equal(report.files.includes('llms.txt'), false);
   assert.deepEqual(report.files.filter((name) => name.endsWith('.html')), [...routes].sort());
   assert.ok(report.files.includes('.nojekyll'));
   const home = readFileSync(join(packageOutput, 'index.html'), 'utf8');

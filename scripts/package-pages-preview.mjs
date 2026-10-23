@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { readdir, readFile, writeFile, stat } from 'node:fs/promises';
+import { readdir, readFile, writeFile, stat, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -148,6 +148,8 @@ export async function validatePayload(directory) {
 }
 
 export async function packagePayload(directory) {
+  // The production directory must not be advertised by approval-only exports.
+  await rm(path.join(directory, 'llms.txt'), { force: true });
   for (const file of await walk(directory)) {
     const extension = path.extname(file);
     if (['.html', '.css'].includes(extension)) {
