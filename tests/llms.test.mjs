@@ -4,7 +4,8 @@ import { test } from 'node:test';
 
 test('the llms directory describes the firm and links only to its published resources', () => {
   const content = readFileSync(new URL('../public/llms.txt', import.meta.url), 'utf8');
-  assert.match(content, /^# J&J CONSULTORES Y AUDITORES\n\n> /);
+  assert.equal(content.charCodeAt(0), 0xfeff, 'UTF-8 BOM keeps accents readable when served without a charset');
+  assert.match(content.replace(/^\uFEFF/, ''), /^# J&J CONSULTORES Y AUDITORES\n\n> /);
   const links = [...content.matchAll(/\]\((https:\/\/[^)]+)\)/g)].map((match) => match[1]);
   assert.deepEqual(links, ['https://jjconsultores.pe/', 'https://jjconsultores.pe/nosotros/',
     'https://jjconsultores.pe/servicios/', 'https://jjconsultores.pe/sitemap-index.xml']);
